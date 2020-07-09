@@ -71,7 +71,8 @@ class DatabaseMethods {
             title: params[columnName],
             due: DateTime.parse(params[columnDue]),
             priority: params[columnPriority],
-            id: params[columnId]);
+            id: params[columnId],
+            typeKey: params[columnTypeKey]);
         widgets.add(nextItem);
       }
     }
@@ -145,7 +146,6 @@ class Item extends Entry {
   String name;
   DateTime due;
   int priority;
-  int classKey;
   int typeKey;
 
   Item();
@@ -156,6 +156,7 @@ class Item extends Entry {
     name = map[columnName];
     due = DateTime.parse(map[columnDue]);
     priority = map[columnPriority];
+    typeKey = map[columnTypeKey];
   }
 
   // convenience method to create a Map from this Word object
@@ -163,7 +164,8 @@ class Item extends Entry {
     var map = <String, dynamic>{
       columnName: name,
       columnDue: due.toString(),
-      columnPriority: priority
+      columnPriority: priority,
+      columnTypeKey: typeKey
     };
     if (id != null) {
       map[columnId] = id;
@@ -173,7 +175,7 @@ class Item extends Entry {
 
   @override
   String toString() {
-    return '$id ' + name + ' Due $due, priority $priority';
+    return '$id ' + name + ' Due $due, priority $priority, typeKey $typeKey';
   }
 }
 
@@ -241,7 +243,7 @@ class AssignType extends Entry {
 // singleton class to manage the database
 class ItemDatabaseHelper extends DatabaseHelper {
   // This is the actual database filename that is saved in the docs directory.
-  static final _databaseName = "ItemDatabase.db";
+  static final _databaseName = "ItemDatabase2.db";
   // Increment this version when you need to change the schema.
   static final _databaseVersion = 1;
 
@@ -276,7 +278,6 @@ class ItemDatabaseHelper extends DatabaseHelper {
                 $columnName TEXT NOT NULL,
                 $columnDue STRING NOT NULL,
                 $columnPriority INT NOT NULL,
-                $columnClassKey INT NOT NULL,
                 $columnTypeKey INT NOT NULL
               )
               ''');
@@ -293,7 +294,13 @@ class ItemDatabaseHelper extends DatabaseHelper {
   Future<Item> queryEntry(int id) async {
     Database db = await database;
     List<Map> maps = await db.query(tableItems,
-        columns: [columnId, columnName, columnDue, columnPriority],
+        columns: [
+          columnId,
+          columnName,
+          columnDue,
+          columnPriority,
+          columnTypeKey
+        ],
         where: '$columnId = ?',
         whereArgs: [id]);
     if (maps.length > 0) {
@@ -350,7 +357,7 @@ class ItemDatabaseHelper extends DatabaseHelper {
 // singleton class to manage the database
 class CompletedItemDatabaseHelper extends DatabaseHelper {
   // This is the actual database filename that is saved in the docs directory.
-  static final _databaseName = "CompletedItemDatabase2.db";
+  static final _databaseName = "CompletedItemDatabase3.db";
   // Increment this version when you need to change the schema.
   static final _databaseVersion = 1;
 
@@ -385,7 +392,6 @@ class CompletedItemDatabaseHelper extends DatabaseHelper {
                 $columnName TEXT NOT NULL,
                 $columnDue STRING NOT NULL,
                 $columnPriority INT NOT NULL,
-                $columnClassKey INT NOT NULL,
                 $columnTypeKey INT NOT NULL
               )
               ''');
@@ -401,7 +407,13 @@ class CompletedItemDatabaseHelper extends DatabaseHelper {
   Future<Item> queryEntry(int id) async {
     Database db = await database;
     List<Map> maps = await db.query(completedItems,
-        columns: [columnId, columnName, columnDue, columnPriority],
+        columns: [
+          columnId,
+          columnName,
+          columnDue,
+          columnPriority,
+          columnTypeKey
+        ],
         where: '$columnId = ?',
         whereArgs: [id]);
     if (maps.length > 0) {

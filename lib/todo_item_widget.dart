@@ -20,7 +20,7 @@ class TodoItemWidget extends ItemWidget {
     return Container(
       child: Row(
         children: <Widget>[
-          Text('$title'),
+          Text('$title, $typeKey'),
           priorityToWidget(priority),
         ],
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -178,6 +178,34 @@ class TodoItemWidget extends ItemWidget {
 
     return Icon(MyFlutterApp.exclamation_circle, color: color, size: 16.0);
   }
+
+  Future<String> getClassType() async {
+    SchoolClass myClass;
+    AssignType myType;
+    List<SchoolClass> classes =
+        await DatabaseMethods.readAll(SchoolClassDatabaseHelper.instance);
+    List<AssignType> types =
+        await DatabaseMethods.readAll(AssignTypeDatabaseHelper.instance);
+
+    for (int i = 0; i < types.length; i++) {
+      print("Id of current type is ${types[i].id}, typeKey is $typeKey");
+      if (types[i].id == typeKey) {
+        myType = types[i];
+      }
+    }
+    if (myType == null) {
+      return "type not found";
+    }
+    for (int i = 0; i < classes.length; i++) {
+      if (classes[i].id == myType.classKey) {
+        myClass = classes[i];
+      }
+    }
+    if (myClass == null) {
+      return "class not found, type: ${myType.name}";
+    }
+    return "class: ${myClass.name}, type: ${myType.name}";
+  }
 }
 
 class BuildTile extends StatefulWidget {
@@ -204,6 +232,7 @@ class _BuildTileState extends State<BuildTile> {
   StreamController controllerRef;
   @override
   Widget build(BuildContext context) {
+    callGetClassTypes();
     return Column(children: <Widget>[
       ListTile(
         contentPadding: EdgeInsets.symmetric(horizontal: 5),
@@ -269,6 +298,7 @@ class _BuildTileState extends State<BuildTile> {
     super.initState();
     _expanded = false;
     id = widget.item.id;
+    callGetClassTypes();
     if (widget.completed) {
       controllerRef = widget.controllerRefCompleted;
       instance = CompletedItemDatabaseHelper.instance;
@@ -278,6 +308,11 @@ class _BuildTileState extends State<BuildTile> {
       instance = ItemDatabaseHelper.instance;
       whichIsInstance = "item";
     }
+  }
+
+  void callGetClassTypes() async {
+    String output = await widget.item.getClassType();
+    print(output);
   }
 
   void _editItem() {
@@ -389,6 +424,7 @@ class _MyCheckboxState extends State<MyCheckbox> {
             itemToSave.name = widget.item.title;
             itemToSave.due = widget.item.due;
             itemToSave.priority = widget.item.priority;
+            itemToSave.typeKey = widget.item.typeKey;
             await DatabaseMethods.deleteItem(
                 widget.item.id, ItemDatabaseHelper.instance);
             await DatabaseMethods.save(
@@ -402,6 +438,7 @@ class _MyCheckboxState extends State<MyCheckbox> {
             itemToSave.name = widget.item.title;
             itemToSave.due = widget.item.due;
             itemToSave.priority = widget.item.priority;
+            itemToSave.typeKey = widget.item.typeKey;
             await DatabaseMethods.deleteItem(
                 widget.item.id, CompletedItemDatabaseHelper.instance);
             await DatabaseMethods.save(itemToSave, ItemDatabaseHelper.instance);

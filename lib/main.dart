@@ -153,6 +153,8 @@ class _ItemListState extends State<ItemList> {
                         item.name = myTextController.text;
                         item.due = myDateTimePicker.getDateTime();
                         item.priority = 0;
+                        item.typeKey = 4;
+
                         if (myPriorityDropdown.getVal() ==
                             Vals.priorityDropdownStrings[1]) item.priority = 1;
                         if (myPriorityDropdown.getVal() ==
