@@ -64,10 +64,9 @@ class DatabaseMethods {
 
     if (type == DatabaseTypes.itemDatabase) {
       TodoItemWidget nextItem;
-      SchoolClass myClass;
-      AssignType myType;
-      String className = "";
-      String typeName = "";
+      String className;
+      String typeName;
+      Color classColor = Colors.white;
       List<SchoolClass> classes =
           await DatabaseMethods.readAll(SchoolClassDatabaseHelper.instance);
       List<AssignType> types =
@@ -76,22 +75,23 @@ class DatabaseMethods {
       for (int i = 0; i < entriesDatabaseType.length; i++) {
         Map<String, dynamic> params = entriesDatabaseType[i].toMap();
 
+        className = "";
+        classColor = Colors.white;
+        typeName = "";
+
         for (int j = 0; j < classes.length; j++) {
-          if (classes[i].id == params[columnClassKey]) {
-            myClass = classes[i];
+          print("j = $j, className is currently $className");
+          if (classes[j].id == params[columnClassKey]) {
+            className = classes[j].name;
+            classColor = classes[j].color;
           }
         }
 
         for (int j = 0; j < types.length; j++) {
+          print("j = $j, typeName is currently $typeName");
           if (types[j].id == params[columnTypeKey]) {
-            myType = types[i];
+            typeName = types[j].name;
           }
-        }
-        if (myClass != null) {
-          className = myClass.name;
-        }
-        if (myType != null) {
-          typeName = myType.name;
         }
 
         nextItem = new TodoItemWidget(
@@ -102,7 +102,8 @@ class DatabaseMethods {
             typeKey: params[columnTypeKey],
             classKey: params[columnClassKey],
             className: className,
-            typeName: typeName);
+            typeName: typeName,
+            classColor: classColor);
         widgets.add(nextItem);
       }
     }

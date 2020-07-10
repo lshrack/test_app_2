@@ -17,6 +17,7 @@ class TodoItemWidget extends ItemWidget {
   final int classKey;
   final String className;
   final String typeName;
+  final Color classColor;
   TodoItemWidget(
       {this.id,
       this.title,
@@ -25,13 +26,14 @@ class TodoItemWidget extends ItemWidget {
       this.typeKey,
       this.classKey,
       this.className,
-      this.typeName});
+      this.typeName,
+      this.classColor});
   @override
   Widget buildTitle(BuildContext context) {
     return Container(
       child: Row(
         children: <Widget>[
-          Flexible(child: Text('$title, $typeName, $className')),
+          Flexible(child: Text('$title'), fit: FlexFit.tight),
           priorityToWidget(priority),
         ],
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -51,7 +53,7 @@ class TodoItemWidget extends ItemWidget {
             flex: 6),
         Flexible(
             child: Text(
-              "Current Events",
+              typeName,
               textAlign: TextAlign.right,
             ),
             flex: 4),
@@ -226,30 +228,40 @@ class _BuildTileState extends State<BuildTile> {
   @override
   Widget build(BuildContext context) {
     return Column(children: <Widget>[
-      ListTile(
-        contentPadding: EdgeInsets.symmetric(horizontal: 5),
-        title: widget.item.buildTitle(context),
-        subtitle: widget.item.buildSubtitle(context),
-        leading: Container(
-            width: 50,
-            height: 50,
-            child: MyCheckbox(
-              completed: widget.completed,
-              controllerRefItems: widget.controllerRefItem,
-              controllerRefCompleted: widget.controllerRefCompleted,
-              item: widget.item,
-              index: widget.index,
-            )),
-        trailing: IconButton(
-          icon: Icon(Icons.more_vert),
-          onPressed: () {
-            setState(() {
-              if (_expanded)
-                _expanded = false;
-              else
-                _expanded = true;
-            });
-          },
+      Container(
+        decoration: BoxDecoration(
+            border: Border.all(
+              width: 10,
+              color: widget.item.classColor == Colors.white
+                  ? Colors.white10
+                  : widget.item.classColor,
+            ),
+            borderRadius: BorderRadius.all(Radius.circular(7))),
+        child: ListTile(
+          contentPadding: EdgeInsets.symmetric(horizontal: 5),
+          title: widget.item.buildTitle(context),
+          subtitle: widget.item.buildSubtitle(context),
+          leading: Container(
+              width: 50,
+              height: 50,
+              child: MyCheckbox(
+                completed: widget.completed,
+                controllerRefItems: widget.controllerRefItem,
+                controllerRefCompleted: widget.controllerRefCompleted,
+                item: widget.item,
+                index: widget.index,
+              )),
+          trailing: IconButton(
+            icon: Icon(Icons.more_vert),
+            onPressed: () {
+              setState(() {
+                if (_expanded)
+                  _expanded = false;
+                else
+                  _expanded = true;
+              });
+            },
+          ),
         ),
       ),
       ifExpanded(_expanded),
@@ -376,6 +388,8 @@ class _BuildTileState extends State<BuildTile> {
                           if (myPriorityDropdown.getVal() ==
                               Vals.priorityDropdownStrings[3])
                             item.priority = 3;
+                          item.classKey = widget.item.classKey;
+                          item.typeKey = widget.item.typeKey;
                           await DatabaseMethods.editItem(instance, item);
                           controllerRef.add(ControllerNums.update);
                           Navigator.pop(context);

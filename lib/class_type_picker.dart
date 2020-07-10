@@ -23,12 +23,12 @@ class ClassTypePicker extends StatefulWidget {
 class _ClassTypePickerState extends State<ClassTypePicker> {
   int classKey;
   int typeKey;
-  List<Entry> classes;
+  List<Entry> classes = [];
   List<String> classStrings = ["none selected"];
   List<Color> classColors = [Colors.white];
   IconData icon = MyFlutterApp.circle;
   StreamController<int> controller = new StreamController();
-  List<Entry> types;
+  List<Entry> types = [];
   List<String> typeStrings = ["none selected"];
   List<Color> typeColors = [Colors.white];
   Stream<int> stream;

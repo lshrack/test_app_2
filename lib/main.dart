@@ -143,9 +143,8 @@ class _ItemListState extends State<ItemList> {
                     child: TextField(
                       style: _inputTextStyle,
                       decoration: InputDecoration(
-                          //border:OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(2))),
-                          //labelText: "Title",
-                          ),
+                          hintText: "Item Name",
+                          hintStyle: TextStyle(color: Colors.grey)),
                       controller: myTextController,
                     ),
                   ),
@@ -157,7 +156,9 @@ class _ItemListState extends State<ItemList> {
                         item.due = myDateTimePicker.getDateTime();
                         item.priority = 0;
                         item.typeKey = myClassTypePicker.getTypeKey();
+                        print("saved the type key as ${item.typeKey}");
                         item.classKey = myClassTypePicker.getClassKey();
+                        print("saved the class key as ${item.classKey}");
 
                         if (myPriorityDropdown.getVal() ==
                             Vals.priorityDropdownStrings[1]) item.priority = 1;
