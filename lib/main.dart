@@ -11,6 +11,7 @@ import 'dart:async';
 import 'my_flutter_app_icons.dart';
 import 'my_dropdown.dart';
 import 'saved_vals.dart';
+import 'class_type_picker.dart';
 
 void main() {
   runApp(MyApp());
@@ -118,6 +119,8 @@ class _ItemListState extends State<ItemList> {
         Vals.priorityDropdownColors,
         Vals.priorityDropdownStrings[0]);
 
+    final myClassTypePicker = ClassTypePicker();
+
     String _selected;
     @override
     void initState() {
@@ -153,7 +156,8 @@ class _ItemListState extends State<ItemList> {
                         item.name = myTextController.text;
                         item.due = myDateTimePicker.getDateTime();
                         item.priority = 0;
-                        item.typeKey = 4;
+                        item.typeKey = myClassTypePicker.getTypeKey();
+                        item.classKey = myClassTypePicker.getClassKey();
 
                         if (myPriorityDropdown.getVal() ==
                             Vals.priorityDropdownStrings[1]) item.priority = 1;
@@ -170,6 +174,7 @@ class _ItemListState extends State<ItemList> {
             ),
             Container(width: 400, height: 200, child: myDateTimePicker),
             myPriorityDropdown,
+            myClassTypePicker,
           ],
         ));
   }

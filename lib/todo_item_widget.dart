@@ -14,13 +14,24 @@ class TodoItemWidget extends ItemWidget {
   final DateTime due;
   final int priority;
   final int typeKey;
-  TodoItemWidget({this.id, this.title, this.due, this.priority, this.typeKey});
+  final int classKey;
+  final String className;
+  final String typeName;
+  TodoItemWidget(
+      {this.id,
+      this.title,
+      this.due,
+      this.priority,
+      this.typeKey,
+      this.classKey,
+      this.className,
+      this.typeName});
   @override
   Widget buildTitle(BuildContext context) {
     return Container(
       child: Row(
         children: <Widget>[
-          Text('$title, $typeKey'),
+          Flexible(child: Text('$title, $typeName, $className')),
           priorityToWidget(priority),
         ],
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -29,12 +40,22 @@ class TodoItemWidget extends ItemWidget {
   }
 
   Widget buildSubtitle(BuildContext context) {
-    return Container(
-      child: Row(
-        children: <Widget>[
-          Text(DateTimeToString(due)),
-        ],
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisSize: MainAxisSize.max,
+      children: <Widget>[
+        Flexible(
+            child: Text(
+              "${DateTimeToString(due)}",
+            ),
+            flex: 6),
+        Flexible(
+            child: Text(
+              "Current Events",
+              textAlign: TextAlign.right,
+            ),
+            flex: 4),
+      ],
     );
   }
 
@@ -178,34 +199,6 @@ class TodoItemWidget extends ItemWidget {
 
     return Icon(MyFlutterApp.exclamation_circle, color: color, size: 16.0);
   }
-
-  Future<String> getClassType() async {
-    SchoolClass myClass;
-    AssignType myType;
-    List<SchoolClass> classes =
-        await DatabaseMethods.readAll(SchoolClassDatabaseHelper.instance);
-    List<AssignType> types =
-        await DatabaseMethods.readAll(AssignTypeDatabaseHelper.instance);
-
-    for (int i = 0; i < types.length; i++) {
-      print("Id of current type is ${types[i].id}, typeKey is $typeKey");
-      if (types[i].id == typeKey) {
-        myType = types[i];
-      }
-    }
-    if (myType == null) {
-      return "type not found";
-    }
-    for (int i = 0; i < classes.length; i++) {
-      if (classes[i].id == myType.classKey) {
-        myClass = classes[i];
-      }
-    }
-    if (myClass == null) {
-      return "class not found, type: ${myType.name}";
-    }
-    return "class: ${myClass.name}, type: ${myType.name}";
-  }
 }
 
 class BuildTile extends StatefulWidget {
@@ -232,7 +225,6 @@ class _BuildTileState extends State<BuildTile> {
   StreamController controllerRef;
   @override
   Widget build(BuildContext context) {
-    callGetClassTypes();
     return Column(children: <Widget>[
       ListTile(
         contentPadding: EdgeInsets.symmetric(horizontal: 5),
@@ -298,7 +290,7 @@ class _BuildTileState extends State<BuildTile> {
     super.initState();
     _expanded = false;
     id = widget.item.id;
-    callGetClassTypes();
+    getClassType();
     if (widget.completed) {
       controllerRef = widget.controllerRefCompleted;
       instance = CompletedItemDatabaseHelper.instance;
@@ -310,9 +302,10 @@ class _BuildTileState extends State<BuildTile> {
     }
   }
 
-  void callGetClassTypes() async {
-    String output = await widget.item.getClassType();
-    print(output);
+  void getClassType() async {
+    print("gonna rerun setstate now");
+
+    setState(() {});
   }
 
   void _editItem() {
@@ -425,6 +418,7 @@ class _MyCheckboxState extends State<MyCheckbox> {
             itemToSave.due = widget.item.due;
             itemToSave.priority = widget.item.priority;
             itemToSave.typeKey = widget.item.typeKey;
+            itemToSave.classKey = widget.item.classKey;
             await DatabaseMethods.deleteItem(
                 widget.item.id, ItemDatabaseHelper.instance);
             await DatabaseMethods.save(
@@ -439,6 +433,7 @@ class _MyCheckboxState extends State<MyCheckbox> {
             itemToSave.due = widget.item.due;
             itemToSave.priority = widget.item.priority;
             itemToSave.typeKey = widget.item.typeKey;
+            itemToSave.classKey = widget.item.classKey;
             await DatabaseMethods.deleteItem(
                 widget.item.id, CompletedItemDatabaseHelper.instance);
             await DatabaseMethods.save(itemToSave, ItemDatabaseHelper.instance);

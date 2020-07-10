@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
+import 'saved_vals.dart';
 
 class MyDropdown extends StatefulWidget {
   final List<String> _items;
   final IconData _icon;
   final List<Color> _colors;
+  final StreamController controller;
   String _currPicked;
-  MyDropdown(this._items, this._icon, this._colors, this._currPicked);
+  MyDropdown(this._items, this._icon, this._colors, this._currPicked,
+      {this.controller});
   _MyDropdownState myState;
 
   @override
@@ -31,6 +35,9 @@ class _MyDropdownState extends State<MyDropdown> {
         items: toDropdownList(
             widget._items, widget._icon, widget._colors, _inputTextStyle),
         onChanged: (string) {
+          if (widget.controller != null) {
+            widget.controller.add(ControllerNums.dChangeVal);
+          }
           setState(() {
             widget._currPicked = string;
           });

@@ -11,7 +11,7 @@
 ///      fonts:
 ///       - asset: fonts/MyFlutterApp.ttf
 ///
-///
+/// 
 /// * RPG Awesome, Copyright (c) 2014, Daniela Howe
 ///         Author:    Daniela Howe & Ivan Montiel
 ///         License:   SIL (http://scripts.sil.org/OFL)
@@ -19,6 +19,10 @@
 /// * Font Awesome 5, Copyright (C) 2016 by Dave Gandy
 ///         Author:    Dave Gandy
 ///         License:   SIL (https://github.com/FortAwesome/Font-Awesome/blob/master/LICENSE.txt)
+///         Homepage:  http://fortawesome.github.com/Font-Awesome/
+/// * Font Awesome 4, Copyright (C) 2016 by Dave Gandy
+///         Author:    Dave Gandy
+///         License:   SIL ()
 ///         Homepage:  http://fortawesome.github.com/Font-Awesome/
 ///
 import 'package:flutter/widgets.dart';
@@ -29,8 +33,7 @@ class MyFlutterApp {
   static const _kFontFam = 'MyFlutterApp';
   static const _kFontPkg = null;
 
-  static const IconData pine_tree =
-      IconData(0xea62, fontFamily: _kFontFam, fontPackage: _kFontPkg);
-  static const IconData exclamation_circle =
-      IconData(0xf06a, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData pine_tree = IconData(0xea62, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData exclamation_circle = IconData(0xf06a, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData circle = IconData(0xf111, fontFamily: _kFontFam, fontPackage: _kFontPkg);
 }

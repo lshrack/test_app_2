@@ -64,15 +64,45 @@ class DatabaseMethods {
 
     if (type == DatabaseTypes.itemDatabase) {
       TodoItemWidget nextItem;
+      SchoolClass myClass;
+      AssignType myType;
+      String className = "";
+      String typeName = "";
+      List<SchoolClass> classes =
+          await DatabaseMethods.readAll(SchoolClassDatabaseHelper.instance);
+      List<AssignType> types =
+          await DatabaseMethods.readAll(AssignTypeDatabaseHelper.instance);
 
       for (int i = 0; i < entriesDatabaseType.length; i++) {
         Map<String, dynamic> params = entriesDatabaseType[i].toMap();
+
+        for (int j = 0; j < classes.length; j++) {
+          if (classes[i].id == params[columnClassKey]) {
+            myClass = classes[i];
+          }
+        }
+
+        for (int j = 0; j < types.length; j++) {
+          if (types[j].id == params[columnTypeKey]) {
+            myType = types[i];
+          }
+        }
+        if (myClass != null) {
+          className = myClass.name;
+        }
+        if (myType != null) {
+          typeName = myType.name;
+        }
+
         nextItem = new TodoItemWidget(
             title: params[columnName],
             due: DateTime.parse(params[columnDue]),
             priority: params[columnPriority],
             id: params[columnId],
-            typeKey: params[columnTypeKey]);
+            typeKey: params[columnTypeKey],
+            classKey: params[columnClassKey],
+            className: className,
+            typeName: typeName);
         widgets.add(nextItem);
       }
     }
@@ -147,6 +177,7 @@ class Item extends Entry {
   DateTime due;
   int priority;
   int typeKey;
+  int classKey;
 
   Item();
 
@@ -157,6 +188,7 @@ class Item extends Entry {
     due = DateTime.parse(map[columnDue]);
     priority = map[columnPriority];
     typeKey = map[columnTypeKey];
+    classKey = map[columnClassKey];
   }
 
   // convenience method to create a Map from this Word object
@@ -165,7 +197,8 @@ class Item extends Entry {
       columnName: name,
       columnDue: due.toString(),
       columnPriority: priority,
-      columnTypeKey: typeKey
+      columnTypeKey: typeKey,
+      columnClassKey: classKey
     };
     if (id != null) {
       map[columnId] = id;
@@ -175,7 +208,9 @@ class Item extends Entry {
 
   @override
   String toString() {
-    return '$id ' + name + ' Due $due, priority $priority, typeKey $typeKey';
+    return '$id ' +
+        name +
+        ' Due $due, priority $priority, typeKey $typeKey, classKey $classKey';
   }
 }
 
@@ -243,7 +278,7 @@ class AssignType extends Entry {
 // singleton class to manage the database
 class ItemDatabaseHelper extends DatabaseHelper {
   // This is the actual database filename that is saved in the docs directory.
-  static final _databaseName = "ItemDatabase2.db";
+  static final _databaseName = "ItemDatabase3.db";
   // Increment this version when you need to change the schema.
   static final _databaseVersion = 1;
 
@@ -278,7 +313,8 @@ class ItemDatabaseHelper extends DatabaseHelper {
                 $columnName TEXT NOT NULL,
                 $columnDue STRING NOT NULL,
                 $columnPriority INT NOT NULL,
-                $columnTypeKey INT NOT NULL
+                $columnTypeKey INT NOT NULL,
+                $columnClassKey INT NOT NULL
               )
               ''');
   }
@@ -299,7 +335,8 @@ class ItemDatabaseHelper extends DatabaseHelper {
           columnName,
           columnDue,
           columnPriority,
-          columnTypeKey
+          columnTypeKey,
+          columnClassKey
         ],
         where: '$columnId = ?',
         whereArgs: [id]);
@@ -357,7 +394,7 @@ class ItemDatabaseHelper extends DatabaseHelper {
 // singleton class to manage the database
 class CompletedItemDatabaseHelper extends DatabaseHelper {
   // This is the actual database filename that is saved in the docs directory.
-  static final _databaseName = "CompletedItemDatabase3.db";
+  static final _databaseName = "CompletedItemDatabase4.db";
   // Increment this version when you need to change the schema.
   static final _databaseVersion = 1;
 
@@ -392,7 +429,8 @@ class CompletedItemDatabaseHelper extends DatabaseHelper {
                 $columnName TEXT NOT NULL,
                 $columnDue STRING NOT NULL,
                 $columnPriority INT NOT NULL,
-                $columnTypeKey INT NOT NULL
+                $columnTypeKey INT NOT NULL,
+                $columnClassKey INT NOT NULL
               )
               ''');
   }
@@ -412,7 +450,8 @@ class CompletedItemDatabaseHelper extends DatabaseHelper {
           columnName,
           columnDue,
           columnPriority,
-          columnTypeKey
+          columnTypeKey,
+          columnClassKey
         ],
         where: '$columnId = ?',
         whereArgs: [id]);

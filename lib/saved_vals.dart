@@ -13,6 +13,8 @@ class ControllerNums {
   static int cDeleteClass = 2;
   static int cAddType = 3;
   static int cDeleteType = 4;
+
+  static int dChangeVal = 0;
 }
 
 class Vals {
