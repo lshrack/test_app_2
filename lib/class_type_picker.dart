@@ -5,6 +5,7 @@ import 'my_flutter_app_icons.dart';
 import 'dart:async';
 import 'saved_vals.dart';
 
+//class for class and type pickers
 class ClassTypePicker extends StatefulWidget {
   _ClassTypePickerState myState = _ClassTypePickerState();
 
@@ -20,6 +21,7 @@ class ClassTypePicker extends StatefulWidget {
   }
 }
 
+//manages state for class and type pickers (two dropdown menus)
 class _ClassTypePickerState extends State<ClassTypePicker> {
   int classKey;
   int typeKey;
@@ -88,6 +90,7 @@ class _ClassTypePickerState extends State<ClassTypePicker> {
     );
   }
 
+  //gets the list of classes from the database, builds the dropdown, and sets state
   void getClasses() async {
     classes = await DatabaseMethods.readAll(SchoolClassDatabaseHelper.instance);
 
@@ -107,6 +110,8 @@ class _ClassTypePickerState extends State<ClassTypePicker> {
     setState(() {});
   }
 
+  //gets the list of types from the database, figures out what class is picked,
+  //figures out what types are in that class, builds dropdown, and sets state
   void updateTypes() async {
     String className = classDropdown.getVal();
     SchoolClass currClass = classes[0];
@@ -138,6 +143,7 @@ class _ClassTypePickerState extends State<ClassTypePicker> {
     setState(() {});
   }
 
+  //figures out what type has been selected from the types dropdown
   int getTypeKey() {
     String currType = typeDropdown.getVal();
     for (int i = 0; i < types.length; i++) {
@@ -149,6 +155,7 @@ class _ClassTypePickerState extends State<ClassTypePicker> {
     return 0;
   }
 
+  //figures out what class has been selected from the classes dropdown
   int getClassKey() {
     String currClass = classDropdown.getVal();
     for (int i = 0; i < classes.length; i++) {

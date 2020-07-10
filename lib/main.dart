@@ -107,10 +107,6 @@ class _ItemListState extends State<ItemList> {
   }
 
   Widget buildAddPage() {
-    final _inputTextStyle = TextStyle(
-        color: Theme.of(context).appBarTheme.color,
-        fontWeight: FontWeight.bold,
-        fontSize: 18.0);
     final myTextController = TextEditingController();
     final myDateTimePicker = DateTimeWidget();
     final myPriorityDropdown = MyDropdown(
@@ -141,7 +137,7 @@ class _ItemListState extends State<ItemList> {
                     width: 200,
                     height: 40,
                     child: TextField(
-                      style: _inputTextStyle,
+                      style: Vals.textStyle(context),
                       decoration: InputDecoration(
                           hintText: "Item Name",
                           hintStyle: TextStyle(color: Colors.grey)),
@@ -149,7 +145,7 @@ class _ItemListState extends State<ItemList> {
                     ),
                   ),
                   FlatButton(
-                      child: Text('ADD', style: _inputTextStyle),
+                      child: Text('ADD', style: Vals.textStyle(context)),
                       onPressed: () {
                         Item item = new Item();
                         item.name = myTextController.text;

@@ -80,7 +80,6 @@ class DatabaseMethods {
         typeName = "";
 
         for (int j = 0; j < classes.length; j++) {
-          print("j = $j, className is currently $className");
           if (classes[j].id == params[columnClassKey]) {
             className = classes[j].name;
             classColor = classes[j].color;
@@ -88,7 +87,6 @@ class DatabaseMethods {
         }
 
         for (int j = 0; j < types.length; j++) {
-          print("j = $j, typeName is currently $typeName");
           if (types[j].id == params[columnTypeKey]) {
             typeName = types[j].name;
           }
@@ -123,13 +121,25 @@ class DatabaseMethods {
 
     if (type == DatabaseTypes.typeDatabase) {
       AssignTypeWidget nextWidget;
+      List<SchoolClass> classes =
+          await DatabaseMethods.readAll(SchoolClassDatabaseHelper.instance);
+      Color classColor;
 
       for (int i = 0; i < entriesDatabaseType.length; i++) {
+        classColor = Colors.grey;
         Map<String, dynamic> params = entriesDatabaseType[i].toMap();
+
+        for (int j = 0; j < classes.length; j++) {
+          if (classes[j].id == params[columnClassKey]) {
+            classColor = classes[j].color;
+          }
+        }
+
         nextWidget = new AssignTypeWidget(
             name: params[columnName],
             id: params[columnId],
-            classKey: params[columnClassKey]);
+            classKey: params[columnClassKey],
+            parentClassColor: classColor);
         widgets.add(nextWidget);
       }
     }
@@ -144,8 +154,8 @@ class DatabaseMethods {
     helper.deleteAllEntries();
   }
 
-  static deleteItem(int index, DatabaseHelper helper) async {
-    await helper.deleteEntry(index);
+  static deleteItem(int id, DatabaseHelper helper) async {
+    await helper.deleteEntry(id);
 
     await readAll(helper);
   }

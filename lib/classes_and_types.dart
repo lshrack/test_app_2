@@ -224,8 +224,10 @@ class _ClassViewState extends State<ClassView> {
         children: <Widget>[
           classToBuild.buildTitle(context),
           TypeView(
-              classKey: classToBuild.id,
-              myStream: typeControllers[index].stream),
+            classKey: classToBuild.id,
+            myStream: typeControllers[index].stream,
+            controllerRef: typeControllers[index],
+          ),
           Row(
             children: <Widget>[
               Container(
@@ -309,7 +311,8 @@ class _ClassViewState extends State<ClassView> {
 class TypeView extends StatefulWidget {
   final classKey;
   final Stream<int> myStream;
-  TypeView({this.classKey, this.myStream});
+  final StreamController controllerRef;
+  TypeView({this.classKey, this.myStream, this.controllerRef});
   @override
   _TypeViewState createState() => _TypeViewState();
 }
@@ -336,8 +339,9 @@ class _TypeViewState extends State<TypeView> {
 
           final index = i;
           if (index < types.length) {
-            final currClass = types[index];
-            return currClass.buildTitle(context);
+            final currType = types[index];
+            return (currType as AssignTypeWidget)
+                .buildTitle2(context, widget.controllerRef, i);
           }
 
           return Container();
@@ -354,11 +358,26 @@ class _TypeViewState extends State<TypeView> {
       if (myNum == ControllerNums.cAddType) {
         _listKey.currentState.insertItem(types.length);
         await setTypes();
+      } else if (int.parse(myNum.toString().substring(0, 1)) ==
+          ControllerNums.cDeleteType) {
+        if (myNum.toString().length > 1) {
+          print("removing item");
+          removeItem(int.parse(myNum.toString().substring(1)));
+        }
       }
     });
   }
 
-  void setTypes() async {
+  void removeItem(int index) {
+    _listKey.currentState.removeItem(index, ((context, animation) {
+      return Container();
+    }));
+    types.removeAt(index);
+
+    setState(() {});
+  }
+
+  Future<void> setTypes() async {
     List<ItemWidget> allTypes;
     allTypes = await DatabaseMethods.readAllAsWidget(
         typeHelper, DatabaseTypes.typeDatabase);

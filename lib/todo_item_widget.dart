@@ -8,6 +8,7 @@ import 'my_dropdown.dart';
 import 'saved_vals.dart';
 import 'dart:async';
 
+//manages how items display, mainly
 class TodoItemWidget extends ItemWidget {
   final int id;
   final String title;
@@ -203,6 +204,7 @@ class TodoItemWidget extends ItemWidget {
   }
 }
 
+//Builds list tiles for items in the list
 class BuildTile extends StatefulWidget {
   final TodoItemWidget item;
   final controllerRefItem;
@@ -219,6 +221,7 @@ class BuildTile extends StatefulWidget {
   _BuildTileState createState() => _BuildTileState();
 }
 
+//manages state when building items in list
 class _BuildTileState extends State<BuildTile> {
   bool _expanded;
   int id;
@@ -272,6 +275,7 @@ class _BuildTileState extends State<BuildTile> {
     ]);
   }
 
+  //displays extra section when more button is pressed
   Widget ifExpanded(bool _show) {
     if (!_show) {
       return Container();
@@ -333,11 +337,8 @@ class _BuildTileState extends State<BuildTile> {
     }));
   }
 
+  //builds page for when you want to edit an item
   Widget buildEditPage() {
-    final _inputTextStyle = TextStyle(
-        color: Theme.of(context).appBarTheme.color,
-        fontWeight: FontWeight.bold,
-        fontSize: 18.0);
     final TextEditingController _myTextController =
         TextEditingController(text: widget.item.title);
     final _myDateTimePicker = DateTimeWidget(
@@ -366,10 +367,10 @@ class _BuildTileState extends State<BuildTile> {
                         width: 200,
                         height: 40,
                         child: TextField(
-                            style: _inputTextStyle,
+                            style: Vals.textStyle(context),
                             controller: _myTextController)),
                     FlatButton(
-                        child: Text("SAVE", style: _inputTextStyle),
+                        child: Text("SAVE", style: Vals.textStyle(context)),
                         onPressed: (() async {
                           id = widget.item.id;
                           Item item = new Item();
@@ -420,6 +421,7 @@ class MyCheckbox extends StatefulWidget {
   _MyCheckboxState createState() => _MyCheckboxState();
 }
 
+//manages state for item checkboxes and how items move between completed and uncompleted lists
 class _MyCheckboxState extends State<MyCheckbox> {
   @override
   Widget build(BuildContext context) {
@@ -461,6 +463,7 @@ class _MyCheckboxState extends State<MyCheckbox> {
   }
 }
 
+//manages widgets for classes
 class SchoolClassWidget extends ItemWidget {
   static const defaultColor = Colors.blueGrey;
   int id;
@@ -500,33 +503,105 @@ class SchoolClassWidget extends ItemWidget {
   }
 }
 
+//manages widgets for types
 class AssignTypeWidget extends ItemWidget {
   int id;
   String name;
   int classKey;
+  Color parentClassColor;
+  bool expanded = false;
 
-  AssignTypeWidget({this.id, this.name, this.classKey});
+  AssignTypeWidget({this.id, this.name, this.classKey, this.parentClassColor});
 
   @override
   Widget buildLeading(BuildContext context) {
-    // TODO: implement buildLeading
     return Container();
   }
 
   @override
   Widget buildSubtitle(BuildContext context) {
-    // TODO: implement buildSubtitle
     return Text("subtitle, class key is $classKey");
   }
 
   @override
   Widget buildTitle(BuildContext context) {
-    // TODO: implement buildTitle
-    return Text(name);
+    return AssignTypeTitle(this);
+  }
+
+  Widget buildTitle2(
+      BuildContext context, StreamController controller, int index) {
+    return AssignTypeTitle(this, controller: controller, index: index);
   }
 
   @override
   int getForeignKey() {
     return classKey;
+  }
+}
+
+class AssignTypeTitle extends StatefulWidget {
+  final AssignTypeWidget parent;
+  final StreamController controller;
+  final int index;
+  AssignTypeTitle(this.parent, {this.controller, this.index});
+  @override
+  _AssignTypeTitleState createState() => _AssignTypeTitleState();
+}
+
+class _AssignTypeTitleState extends State<AssignTypeTitle> {
+  bool _expanded;
+  @override
+  void initState() {
+    super.initState();
+    _expanded = false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Text(
+                widget.parent.name,
+                style: Vals.textStyle(context, color: Colors.black, size: 15),
+              ),
+              GestureDetector(
+                  child: Icon(Icons.more_vert),
+                  onTap: (() {
+                    _expanded = !_expanded;
+                    setState(() {});
+                  }))
+            ]),
+        _expanded
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                    child: GestureDetector(
+                        child: Icon(Icons.delete),
+                        onTap: () {
+                          DatabaseMethods.deleteItem(widget.parent.id,
+                              AssignTypeDatabaseHelper.instance);
+                          widget.controller.add(int.parse(
+                              "${ControllerNums.cDeleteType}${widget.index}"));
+                        }),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                    child: GestureDetector(
+                      child: Icon(Icons.edit),
+                    ),
+                  ),
+                ],
+              )
+            : Container(),
+        Divider(thickness: 1.5, color: widget.parent.parentClassColor)
+      ],
+    );
   }
 }

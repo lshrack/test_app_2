@@ -26,14 +26,10 @@ class MyDropdown extends StatefulWidget {
 class _MyDropdownState extends State<MyDropdown> {
   @override
   Widget build(BuildContext context) {
-    final _inputTextStyle = TextStyle(
-        color: Theme.of(context).appBarTheme.color,
-        fontWeight: FontWeight.bold,
-        fontSize: 18.0);
     return DropdownButton(
         value: widget._currPicked,
-        items: toDropdownList(
-            widget._items, widget._icon, widget._colors, _inputTextStyle),
+        items: toDropdownList(widget._items, widget._icon, widget._colors,
+            Vals.textStyle(context)),
         onChanged: (string) {
           if (widget.controller != null) {
             widget.controller.add(ControllerNums.dChangeVal);
