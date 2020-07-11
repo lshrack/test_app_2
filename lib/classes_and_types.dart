@@ -55,6 +55,10 @@ class _ClassesAndTypesState extends State<ClassesAndTypes> {
       if (myNum == ControllerNums.cClearAll) {
         clear();
       }
+      if (int.parse(myNum.toString().substring(0, 1)) ==
+          ControllerNums.cDeleteClass) {
+        classController.add(myNum);
+      }
     });
   }
 
@@ -172,11 +176,16 @@ class _ClassViewState extends State<ClassView> {
     firstBuild = true;
     setClasses();
     widget.stream.listen((int myNum) async {
+      print("class view got a val!");
       if (myNum == ControllerNums.cClearAll) {
         await clearClasses();
       }
       if (myNum == ControllerNums.cAddClass) {
         await updateAddClass();
+      }
+      if (int.parse(myNum.toString().substring(0, 1)) ==
+          ControllerNums.cDeleteClass) {
+        updateDeleteClass(int.parse(myNum.toString().substring(1)));
       }
     });
     typeControllers = [];
@@ -218,7 +227,19 @@ class _ClassViewState extends State<ClassView> {
       print("adding type controller at ${typeControllers.length}");
       typeControllers.add(StreamController<int>.broadcast());
     }
-    return ClassBuilder(classToBuild, typeControllers[index]);
+
+    return (classToBuild as SchoolClassWidget)
+        .buildTitle2(context, typeControllers[index], index);
+    //return ClassBuilder(classToBuild, typeControllers[index]);
+  }
+
+  void updateDeleteClass(int index) {
+    print("got index $index");
+    _listKey.currentState.removeItem(index, (context, animation) {
+      return Container();
+    });
+
+    setClasses();
   }
 
   Future<void> updateAddClass() async {
@@ -266,43 +287,6 @@ class _ClassViewState extends State<ClassView> {
           atInit = false;
         }
       });
-  }
-}
-
-class ClassBuilder extends StatefulWidget {
-  final SchoolClassWidget classToBuild;
-  final StreamController typeController;
-  ClassBuilder(this.classToBuild, this.typeController);
-  @override
-  _ClassBuilderState createState() => _ClassBuilderState();
-}
-
-class _ClassBuilderState extends State<ClassBuilder> {
-  bool showTypes = false;
-  StreamController controllerRef;
-  Stream myStream;
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      physics: NeverScrollableScrollPhysics(),
-      children: <Widget>[
-        widget.classToBuild.buildTitle2(context, widget.typeController),
-        showTypes
-            ? TypeView(
-                classKey: widget.classToBuild.id,
-                myStream: widget.typeController.stream,
-                controllerRef: widget.typeController,
-              )
-            : Container(height: 20),
-      ],
-      shrinkWrap: true,
-    );
   }
 }
 
@@ -364,6 +348,19 @@ class _TypeViewState extends State<TypeView> {
         }
       } else if (myNum == ControllerNums.cEditType) {
         await setTypes();
+      } else if (myNum == ControllerNums.cDeleteClass) {
+        for (int i = types.length - 1; i >= 0; i--) {
+          await DatabaseMethods.deleteItem(
+              types[i].id, AssignTypeDatabaseHelper.instance);
+
+          _listKey.currentState.removeItem(i, ((context, animation) {
+            return Container();
+          }));
+        }
+
+        types = [];
+
+        setState(() {});
       }
     });
   }

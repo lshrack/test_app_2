@@ -7,6 +7,7 @@ import 'date_time_widget.dart';
 import 'my_dropdown.dart';
 import 'saved_vals.dart';
 import 'dart:async';
+import 'classes_and_types.dart';
 
 //manages how items display, mainly
 class TodoItemWidget extends ItemWidget {
@@ -489,8 +490,9 @@ class SchoolClassWidget extends ItemWidget {
     return SchoolClassTitle(this);
   }
 
-  Widget buildTitle2(BuildContext context, StreamController controller) {
-    return SchoolClassTitle(this, controller: controller);
+  Widget buildTitle2(
+      BuildContext context, StreamController controller, int index) {
+    return SchoolClassTitle(this, controller: controller, index: index);
   }
 
   @override
@@ -499,77 +501,105 @@ class SchoolClassWidget extends ItemWidget {
   }
 }
 
+//Builds each class in list, basically (also builds types underneath, technically)
 class SchoolClassTitle extends StatefulWidget {
   final SchoolClassWidget parent;
   final StreamController controller;
-  SchoolClassTitle(this.parent, {this.controller});
+  final int index;
+  SchoolClassTitle(this.parent, {this.controller, this.index});
   @override
   _SchoolClassTitleState createState() => _SchoolClassTitleState();
 }
 
 class _SchoolClassTitleState extends State<SchoolClassTitle> {
   bool _expanded = false;
+  IconData dropdownArrow = Icons.arrow_drop_down;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        padding: EdgeInsets.all(6),
-        color: widget.parent.color,
-        child: Column(children: <Widget>[
-          Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Text(widget.parent.name,
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold)),
-                GestureDetector(
-                    child: Icon(Icons.more_vert, color: Colors.white),
-                    onTap: () {
-                      _expanded = !_expanded;
-                      setState(() {});
-                    })
-              ]),
-          _expanded
-              ? Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+    return ListView(
+      physics: NeverScrollableScrollPhysics(),
+      children: <Widget>[
+        Container(
+            padding: EdgeInsets.all(6),
+            color: widget.parent.color,
+            child: Column(children: <Widget>[
+              Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      child: GestureDetector(
-                          child: Icon(Icons.edit, color: Colors.white),
-                          onTap: null),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(
-                          left: 10, right: 10, bottom: 5, top: 10),
-                      child: GestureDetector(
-                          child: Icon(Icons.delete, color: Colors.white),
-                          onTap: null),
-                    ),
-                    Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                        child: GestureDetector(
-                            child: Icon(Icons.add_circle_outline,
-                                color: Colors.white),
-                            onTap: () async {
-                              addTypeDialog(context).then((onValue) async {
-                                AssignType typeToAdd = AssignType();
-                                typeToAdd.name = onValue;
-                                typeToAdd.classKey = widget.parent.id;
-                                await DatabaseMethods.save(typeToAdd,
-                                    AssignTypeDatabaseHelper.instance);
+                    Text(widget.parent.name,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold)),
+                    GestureDetector(
+                        child: Icon(dropdownArrow, color: Colors.white),
+                        onTap: () {
+                          _expanded = !_expanded;
+                          if (dropdownArrow == Icons.arrow_drop_down)
+                            dropdownArrow = Icons.arrow_drop_up;
+                          else
+                            dropdownArrow = Icons.arrow_drop_down;
+                          setState(() {});
+                        })
+                  ]),
+              _expanded
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: <Widget>[
+                        Padding(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          child: GestureDetector(
+                              child: Icon(Icons.edit, color: Colors.white),
+                              onTap: null),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(
+                              left: 10, right: 10, bottom: 5, top: 10),
+                          child: GestureDetector(
+                              child: Icon(Icons.delete, color: Colors.white),
+                              onTap: () {
+                                DatabaseMethods.deleteItem(widget.parent.id,
+                                    SchoolClassDatabaseHelper.instance);
+                                widget.controller
+                                    .add(ControllerNums.cDeleteClass);
+                                Vals.classTypeController.add(int.parse(
+                                    "${ControllerNums.cDeleteClass}${widget.index}"));
+                              }),
+                        ),
+                        Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 5),
+                            child: GestureDetector(
+                                child: Icon(Icons.add_circle_outline,
+                                    color: Colors.white),
+                                onTap: () async {
+                                  addTypeDialog(context).then((onValue) async {
+                                    AssignType typeToAdd = AssignType();
+                                    typeToAdd.name = onValue;
+                                    typeToAdd.classKey = widget.parent.id;
+                                    await DatabaseMethods.save(typeToAdd,
+                                        AssignTypeDatabaseHelper.instance);
 
-                                widget.controller.add(ControllerNums.cAddType);
-                              });
-                            })),
-                  ],
-                )
-              : Container()
-        ]));
+                                    widget.controller
+                                        .add(ControllerNums.cAddType);
+                                  });
+                                })),
+                      ],
+                    )
+                  : Container()
+            ])),
+        _expanded
+            ? TypeView(
+                classKey: widget.parent.id,
+                myStream: widget.controller.stream,
+                controllerRef: widget.controller,
+              )
+            : Container(height: 20),
+      ],
+      shrinkWrap: true,
+    );
   }
 }
 
