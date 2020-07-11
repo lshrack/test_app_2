@@ -15,6 +15,7 @@ class ControllerNums {
   static int cDeleteClass = 2;
   static int cAddType = 3;
   static int cDeleteType = 4;
+  static int cEditType = 5;
 
   //used when class dropdown changes value, to know whether to drop type dropdown
   static int dChangeVal = 0;

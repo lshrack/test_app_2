@@ -486,20 +486,90 @@ class SchoolClassWidget extends ItemWidget {
 
   @override
   Widget buildTitle(BuildContext context) {
-    // TODO: implement buildTitle
-    return Container(
-        padding: EdgeInsets.all(6),
-        color: color,
-        child: Text(name,
-            style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold)));
+    return SchoolClassTitle(this);
+  }
+
+  Widget buildTitle2(BuildContext context, StreamController controller) {
+    return SchoolClassTitle(this, controller: controller);
   }
 
   @override
   int getForeignKey() {
     return 0;
+  }
+}
+
+class SchoolClassTitle extends StatefulWidget {
+  final SchoolClassWidget parent;
+  final StreamController controller;
+  SchoolClassTitle(this.parent, {this.controller});
+  @override
+  _SchoolClassTitleState createState() => _SchoolClassTitleState();
+}
+
+class _SchoolClassTitleState extends State<SchoolClassTitle> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        padding: EdgeInsets.all(6),
+        color: widget.parent.color,
+        child: Column(children: <Widget>[
+          Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Text(widget.parent.name,
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold)),
+                GestureDetector(
+                    child: Icon(Icons.more_vert, color: Colors.white),
+                    onTap: () {
+                      _expanded = !_expanded;
+                      setState(() {});
+                    })
+              ]),
+          _expanded
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: <Widget>[
+                    Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      child: GestureDetector(
+                          child: Icon(Icons.edit, color: Colors.white),
+                          onTap: null),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(
+                          left: 10, right: 10, bottom: 5, top: 10),
+                      child: GestureDetector(
+                          child: Icon(Icons.delete, color: Colors.white),
+                          onTap: null),
+                    ),
+                    Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        child: GestureDetector(
+                            child: Icon(Icons.add_circle_outline,
+                                color: Colors.white),
+                            onTap: () async {
+                              addTypeDialog(context).then((onValue) async {
+                                AssignType typeToAdd = AssignType();
+                                typeToAdd.name = onValue;
+                                typeToAdd.classKey = widget.parent.id;
+                                await DatabaseMethods.save(typeToAdd,
+                                    AssignTypeDatabaseHelper.instance);
+
+                                widget.controller.add(ControllerNums.cAddType);
+                              });
+                            })),
+                  ],
+                )
+              : Container()
+        ]));
   }
 }
 
@@ -565,9 +635,11 @@ class _AssignTypeTitleState extends State<AssignTypeTitle> {
         Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              Text(
-                widget.parent.name,
-                style: Vals.textStyle(context, color: Colors.black, size: 15),
+              Flexible(
+                child: Text(
+                  widget.parent.name,
+                  style: Vals.textStyle(context, color: Colors.black, size: 15),
+                ),
               ),
               GestureDetector(
                   child: Icon(Icons.more_vert),
@@ -594,8 +666,22 @@ class _AssignTypeTitleState extends State<AssignTypeTitle> {
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                     child: GestureDetector(
-                      child: Icon(Icons.edit),
-                    ),
+                        child: Icon(Icons.edit),
+                        onTap: () {
+                          _expanded = false;
+                          editTypeDialog(context, widget.parent.name)
+                              .then((onValue) {
+                            AssignType newType = AssignType();
+                            newType.name = onValue;
+                            newType.classKey = widget.parent.classKey;
+                            newType.id = widget.parent.id;
+
+                            DatabaseMethods.editItem(
+                                AssignTypeDatabaseHelper.instance, newType);
+
+                            widget.controller.add(ControllerNums.cEditType);
+                          });
+                        }),
                   ),
                 ],
               )
@@ -604,4 +690,82 @@ class _AssignTypeTitleState extends State<AssignTypeTitle> {
       ],
     );
   }
+}
+
+editTypeDialog(BuildContext context, String text) {
+  final _controller = TextEditingController();
+  _controller.text = text;
+  return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Text("Edit Type"),
+                IconButton(
+                    icon: (Icon(Icons.close)),
+                    onPressed: () {
+                      Navigator.of(context, rootNavigator: true).pop();
+                    }),
+              ]),
+          content: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+            TextField(
+                controller: _controller,
+                decoration: InputDecoration(
+                  hintText: "Type Name",
+                ))
+          ]),
+          actions: <Widget>[
+            FlatButton(
+                child: Text("SAVE"),
+                onPressed: () {
+                  if (_controller.text != "" && _controller.text != text) {
+                    Navigator.of(context, rootNavigator: true)
+                        .pop(_controller.text);
+                  } else
+                    Navigator.of(context, rootNavigator: true).pop(text);
+                })
+          ],
+        );
+      });
+}
+
+addTypeDialog(BuildContext context) {
+  final _controller = TextEditingController();
+
+  return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Text("Add Type"),
+                IconButton(
+                    icon: (Icon(Icons.close)),
+                    onPressed: () {
+                      Navigator.of(context, rootNavigator: true).pop();
+                    }),
+              ]),
+          content: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+            TextField(
+                controller: _controller,
+                decoration: InputDecoration(
+                  hintText: "Type Name",
+                ))
+          ]),
+          actions: <Widget>[
+            FlatButton(
+                child: Text("ADD"),
+                onPressed: () {
+                  if (_controller.text != "") {
+                    Navigator.of(context, rootNavigator: true)
+                        .pop(_controller.text);
+                  } else
+                    Navigator.of(context, rootNavigator: true).pop();
+                })
+          ],
+        );
+      });
 }

@@ -53,7 +53,7 @@ class _ClassesAndTypesState extends State<ClassesAndTypes> {
     setType2();
     mySubscription = widget.myStream.listen((int myNum) {
       if (myNum == ControllerNums.cClearAll) {
-        update();
+        clear();
       }
     });
   }
@@ -107,7 +107,7 @@ class _ClassesAndTypesState extends State<ClassesAndTypes> {
         });
   }
 
-  void update() {
+  void clear() {
     classController.add(ControllerNums.cClearAll);
     if (this.mounted) setState(() {});
   }
@@ -212,52 +212,13 @@ class _ClassViewState extends State<ClassView> {
 
   Widget classBuilder(ItemWidget classToBuild, int index) {
     TextEditingController myController = new TextEditingController();
-    if (!widget.type2) {
-      print("index is $index");
-      print("trying to return the listview!!!");
-      if (firstBuild) {
-        print("adding type controller at ${typeControllers.length}");
-        typeControllers.add(StreamController<int>.broadcast());
-      }
-      return ListView(
-        physics: NeverScrollableScrollPhysics(),
-        children: <Widget>[
-          classToBuild.buildTitle(context),
-          TypeView(
-            classKey: classToBuild.id,
-            myStream: typeControllers[index].stream,
-            controllerRef: typeControllers[index],
-          ),
-          Row(
-            children: <Widget>[
-              Container(
-                  height: 20,
-                  width: 100,
-                  child: TextField(controller: myController)),
-              IconButton(
-                icon: Icon(Icons.add),
-                onPressed: (() async {
-                  if (myController.text.toString() != "") {
-                    AssignType typeToAdd = AssignType();
-                    typeToAdd.name = myController.text.toString();
-                    typeToAdd.classKey = classToBuild.id;
-                    myController.text = "";
-                    await DatabaseMethods.save(
-                        typeToAdd, AssignTypeDatabaseHelper.instance);
-
-                    print(
-                        "Type controllers length rn is ${typeControllers.length}, and index is $index");
-                    typeControllers[index].add(ControllerNums.cAddType);
-                  }
-                }),
-              ),
-            ],
-          )
-        ],
-        shrinkWrap: true,
-      );
+    print("index is $index");
+    print("trying to return the listview!!!");
+    if (firstBuild && typeControllers.length < classes.length) {
+      print("adding type controller at ${typeControllers.length}");
+      typeControllers.add(StreamController<int>.broadcast());
     }
-    return classToBuild.buildTitle(context);
+    return ClassBuilder(classToBuild, typeControllers[index]);
   }
 
   Future<void> updateAddClass() async {
@@ -305,6 +266,43 @@ class _ClassViewState extends State<ClassView> {
           atInit = false;
         }
       });
+  }
+}
+
+class ClassBuilder extends StatefulWidget {
+  final SchoolClassWidget classToBuild;
+  final StreamController typeController;
+  ClassBuilder(this.classToBuild, this.typeController);
+  @override
+  _ClassBuilderState createState() => _ClassBuilderState();
+}
+
+class _ClassBuilderState extends State<ClassBuilder> {
+  bool showTypes = false;
+  StreamController controllerRef;
+  Stream myStream;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      physics: NeverScrollableScrollPhysics(),
+      children: <Widget>[
+        widget.classToBuild.buildTitle2(context, widget.typeController),
+        showTypes
+            ? TypeView(
+                classKey: widget.classToBuild.id,
+                myStream: widget.typeController.stream,
+                controllerRef: widget.typeController,
+              )
+            : Container(height: 20),
+      ],
+      shrinkWrap: true,
+    );
   }
 }
 
@@ -364,6 +362,8 @@ class _TypeViewState extends State<TypeView> {
           print("removing item");
           removeItem(int.parse(myNum.toString().substring(1)));
         }
+      } else if (myNum == ControllerNums.cEditType) {
+        await setTypes();
       }
     });
   }
