@@ -7,7 +7,12 @@ import 'saved_vals.dart';
 
 //class for class and type pickers
 class ClassTypePicker extends StatefulWidget {
-  _ClassTypePickerState myState = _ClassTypePickerState();
+  final int classKeyInput;
+  final int typeKeyInput;
+
+  ClassTypePicker({this.classKeyInput = 0, this.typeKeyInput = 0});
+
+  final _ClassTypePickerState myState = _ClassTypePickerState();
 
   @override
   _ClassTypePickerState createState() => myState;
@@ -29,7 +34,7 @@ class _ClassTypePickerState extends State<ClassTypePicker> {
   List<String> classStrings = ["none selected"];
   List<Color> classColors = [Colors.white];
   IconData icon = MyFlutterApp.circle;
-  StreamController<int> controller = new StreamController();
+  StreamController<int> controller;
   List<Entry> types = [];
   List<String> typeStrings = ["none selected"];
   List<Color> typeColors = [Colors.white];
@@ -47,11 +52,13 @@ class _ClassTypePickerState extends State<ClassTypePicker> {
     currClassPicked = classStrings[0];
     currTypePicked = typeStrings[0];
     showTypes = false;
+    controller = new StreamController();
     stream = controller.stream;
 
     stream.listen((int val) {
       if (val == ControllerNums.dChangeVal) {
         print("got val");
+
         if (classDropdown.getVal() == classStrings[0]) {
           print("back to 0");
           showTypes = false;
@@ -99,6 +106,12 @@ class _ClassTypePickerState extends State<ClassTypePicker> {
       classColors.add((classes[i] as SchoolClass).color);
     }
 
+    setClass();
+    print("having set class, currClassPicked is $currClassPicked");
+    if (currClassPicked != classStrings[0]) {
+      await updateTypes(shouldSetType: true);
+    }
+
     classDropdown = MyDropdown(
       classStrings,
       icon,
@@ -112,7 +125,7 @@ class _ClassTypePickerState extends State<ClassTypePicker> {
 
   //gets the list of types from the database, figures out what class is picked,
   //figures out what types are in that class, builds dropdown, and sets state
-  void updateTypes() async {
+  Future<void> updateTypes({bool shouldSetType = false}) async {
     String className = classDropdown.getVal();
     SchoolClass currClass = classes[0];
     String firstVal = typeStrings[0];
@@ -131,6 +144,14 @@ class _ClassTypePickerState extends State<ClassTypePicker> {
         typeStrings.add((types[i] as AssignType).name);
         typeColors.add(Colors.white);
       }
+    }
+
+    if (shouldSetType) {
+      setType();
+    }
+
+    if (!typeStrings.contains(currTypePicked)) {
+      currTypePicked = typeStrings[0];
     }
 
     typeDropdown = MyDropdown(
@@ -165,5 +186,34 @@ class _ClassTypePickerState extends State<ClassTypePicker> {
     }
 
     return 0;
+  }
+
+  void setClass() {
+    if (widget.classKeyInput != 0) {
+      print("going through to check class keys");
+      for (int i = 0; i < classes.length; i++) {
+        print("${classes[i].id}");
+        if (widget.classKeyInput == classes[i].id) {
+          currClassPicked = (classes[i] as SchoolClass).name;
+          showTypes = true;
+        }
+      }
+    }
+  }
+
+  void setType() {
+    if (widget.typeKeyInput != 0) {
+      print("going to go through list, types.length = ${types.length}");
+      for (int i = 0; i < types.length; i++) {
+        if (widget.typeKeyInput == types[i].id) {
+          String name = (types[i] as AssignType).name;
+          if (typeStrings.contains(name)) {
+            currTypePicked = name;
+            print("currTypePicked set to $currTypePicked");
+          }
+        }
+        print("Looping");
+      }
+    }
   }
 }

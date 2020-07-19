@@ -33,15 +33,16 @@ class _ClassesAndTypesState extends State<ClassesAndTypes> {
               children: <Widget>[
                 FlatButton(
                     child: Text("Add Class",
-                        style: TextStyle(color: Colors.white)),
-                    color: Theme.of(context).appBarTheme.color,
+                        style: Vals.textStyle(context, color: Col.ltblue)),
+                    color: Col.blue,
                     onPressed: () {
-                      createAlertDialog(context).then((onValue) {
+                      addClassDialog(context).then((onValue) {
                         if (onValue != null) updateAddClass(onValue);
                       });
                     }),
               ],
             ),
+            Container(height: 20),
             ClassView(stream: classController.stream),
           ],
         ));
@@ -59,6 +60,10 @@ class _ClassesAndTypesState extends State<ClassesAndTypes> {
           ControllerNums.cDeleteClass) {
         classController.add(myNum);
       }
+      if (myNum == ControllerNums.cEditClass) {
+        print("got num to edit class, sending down the line");
+        classController.add(ControllerNums.cEditClass);
+      }
     });
   }
 
@@ -68,7 +73,7 @@ class _ClassesAndTypesState extends State<ClassesAndTypes> {
     super.dispose();
   }
 
-  createAlertDialog(BuildContext context) {
+  addClassDialog(BuildContext context) {
     final myPicker = ColorPicker();
     final _controller = TextEditingController();
     return showDialog(
@@ -187,36 +192,44 @@ class _ClassViewState extends State<ClassView> {
           ControllerNums.cDeleteClass) {
         updateDeleteClass(int.parse(myNum.toString().substring(1)));
       }
+      if (myNum == ControllerNums.cEditClass) {
+        await setClasses();
+      }
     });
     typeControllers = [];
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedList(
-        physics: NeverScrollableScrollPhysics(),
-        shrinkWrap: true,
-        padding: EdgeInsets.all(10),
-        key: _listKey,
-        initialItemCount: itemCount,
-        itemBuilder: (context, i, animation) {
-          if (classes.length == 0) {
-            return Container();
-          }
+    return Container(
+        decoration: BoxDecoration(
+            border: Border.all(color: Col.blue),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(5)),
+        child: AnimatedList(
+            physics: NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            padding: EdgeInsets.all(10),
+            key: _listKey,
+            initialItemCount: itemCount,
+            itemBuilder: (context, i, animation) {
+              if (classes.length == 0) {
+                return Container();
+              }
 
-          final index = i;
+              final index = i;
 
-          if (index < classes.length) {
-            try {
-              final currClass = classes[index];
-              return classBuilder(currClass, index);
-            } catch (e) {
+              if (index < classes.length) {
+                try {
+                  final currClass = classes[index];
+                  return classBuilder(currClass, index);
+                } catch (e) {
+                  return Container();
+                }
+              }
+
               return Container();
-            }
-          }
-
-          return Container();
-        });
+            }));
   }
 
   Widget classBuilder(ItemWidget classToBuild, int index) {
@@ -405,8 +418,8 @@ class ColorPicker extends StatefulWidget {
     return myState;
   }
 
-  void setColor() {
-    color = Color(0xfff44336);
+  void setColor(Color inColor) {
+    color = inColor;
   }
 
   Color getColor() {

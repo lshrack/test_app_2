@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:test_app_2/class_type_picker.dart';
 import 'package:test_app_2/database_helper.dart';
 import 'package:test_app_2/item_widget.dart';
 import 'package:test_app_2/my_flutter_app_icons.dart';
@@ -35,7 +36,10 @@ class TodoItemWidget extends ItemWidget {
     return Container(
       child: Row(
         children: <Widget>[
-          Flexible(child: Text('$title'), fit: FlexFit.tight),
+          Flexible(
+              child: Text('$title',
+                  style: Vals.textStyle(context, size: 17, color: Col.ltblue)),
+              fit: FlexFit.tight),
           priorityToWidget(priority),
         ],
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -49,15 +53,13 @@ class TodoItemWidget extends ItemWidget {
       mainAxisSize: MainAxisSize.max,
       children: <Widget>[
         Flexible(
-            child: Text(
-              "${DateTimeToString(due)}",
-            ),
+            child: Text("${DateTimeToString(due)}",
+                style: Vals.textStyle(context, size: 14, color: Col.ltblue)),
             flex: 6),
         Flexible(
-            child: Text(
-              typeName,
-              textAlign: TextAlign.right,
-            ),
+            child: Text(typeName,
+                textAlign: TextAlign.right,
+                style: Vals.textStyle(context, size: 14, color: Col.ltblue)),
             flex: 4),
       ],
     );
@@ -231,49 +233,48 @@ class _BuildTileState extends State<BuildTile> {
   StreamController controllerRef;
   @override
   Widget build(BuildContext context) {
-    return Column(children: <Widget>[
-      Container(
-        decoration: BoxDecoration(
-            border: Border.all(
-              width: 10,
-              color: widget.item.classColor == Colors.white
-                  ? Colors.white10
-                  : widget.item.classColor,
+    return Container(
+        color: Col.blue,
+        child: Column(children: <Widget>[
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 10),
+            child: ListTile(
+              contentPadding: EdgeInsets.symmetric(horizontal: 5),
+              title: widget.item.buildTitle(context),
+              subtitle: widget.item.buildSubtitle(context),
+              leading: Container(
+                  width: 50,
+                  height: 50,
+                  child: MyCheckbox(
+                      completed: widget.completed,
+                      controllerRefItems: widget.controllerRefItem,
+                      controllerRefCompleted: widget.controllerRefCompleted,
+                      item: widget.item,
+                      index: widget.index,
+                      color: widget.item.classColor)),
+              trailing: IconButton(
+                icon: Icon(
+                  Icons.more_vert,
+                  color: Col.ltblue,
+                ),
+                onPressed: () {
+                  setState(() {
+                    if (_expanded)
+                      _expanded = false;
+                    else
+                      _expanded = true;
+                  });
+                },
+              ),
             ),
-            borderRadius: BorderRadius.all(Radius.circular(7))),
-        child: ListTile(
-          contentPadding: EdgeInsets.symmetric(horizontal: 5),
-          title: widget.item.buildTitle(context),
-          subtitle: widget.item.buildSubtitle(context),
-          leading: Container(
-              width: 50,
-              height: 50,
-              child: MyCheckbox(
-                completed: widget.completed,
-                controllerRefItems: widget.controllerRefItem,
-                controllerRefCompleted: widget.controllerRefCompleted,
-                item: widget.item,
-                index: widget.index,
-              )),
-          trailing: IconButton(
-            icon: Icon(Icons.more_vert),
-            onPressed: () {
-              setState(() {
-                if (_expanded)
-                  _expanded = false;
-                else
-                  _expanded = true;
-              });
-            },
           ),
-        ),
-      ),
-      ifExpanded(_expanded),
-      Divider(
-        thickness: 2,
-        color: Theme.of(context).appBarTheme.color,
-      ),
-    ]);
+          ifExpanded(_expanded),
+          Divider(
+            thickness: 10,
+            height: 10,
+            color: Col.ltblue,
+          ),
+        ]));
   }
 
   //displays extra section when more button is pressed
@@ -352,6 +353,9 @@ class _BuildTileState extends State<BuildTile> {
         Vals.priorityDropdownColors,
         Vals.priorityDropdownStrings[widget.item.priority]);
 
+    final myClassTypePicker = ClassTypePicker(
+        classKeyInput: widget.item.classKey, typeKeyInput: widget.item.typeKey);
+
     return Container(
         padding: EdgeInsets.all(16.0),
         child: Column(
@@ -390,8 +394,8 @@ class _BuildTileState extends State<BuildTile> {
                           if (myPriorityDropdown.getVal() ==
                               Vals.priorityDropdownStrings[3])
                             item.priority = 3;
-                          item.classKey = widget.item.classKey;
-                          item.typeKey = widget.item.typeKey;
+                          item.classKey = myClassTypePicker.getClassKey();
+                          item.typeKey = myClassTypePicker.getTypeKey();
                           await DatabaseMethods.editItem(instance, item);
                           controllerRef.add(ControllerNums.update);
                           Navigator.pop(context);
@@ -400,6 +404,7 @@ class _BuildTileState extends State<BuildTile> {
                 )),
             Container(width: 400, height: 200, child: _myDateTimePicker),
             myPriorityDropdown,
+            myClassTypePicker,
           ],
         ));
   }
@@ -411,13 +416,14 @@ class MyCheckbox extends StatefulWidget {
   final controllerRefCompleted;
   final TodoItemWidget item;
   final int index;
-  MyCheckbox({
-    this.completed,
-    this.controllerRefItems,
-    this.controllerRefCompleted,
-    this.item,
-    this.index,
-  });
+  final Color color;
+  MyCheckbox(
+      {this.completed,
+      this.controllerRefItems,
+      this.controllerRefCompleted,
+      this.item,
+      this.index,
+      this.color});
   @override
   _MyCheckboxState createState() => _MyCheckboxState();
 }
@@ -427,6 +433,8 @@ class _MyCheckboxState extends State<MyCheckbox> {
   @override
   Widget build(BuildContext context) {
     return Checkbox(
+        activeColor: widget.color != null ? widget.color : Col.teal,
+        checkColor: Col.ltblue,
         value: widget.completed,
         onChanged: (newVal) async {
           if (!widget.completed) {
@@ -522,16 +530,20 @@ class _SchoolClassTitleState extends State<SchoolClassTitle> {
       children: <Widget>[
         Container(
             padding: EdgeInsets.all(6),
-            color: widget.parent.color,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(3),
+                color: widget.parent.color),
+            //color: widget.parent.color,
             child: Column(children: <Widget>[
               Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
                     Text(widget.parent.name,
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold)),
+                        style: Vals.textStyle(
+                          context,
+                          color: Colors.white,
+                          size: 16,
+                        )),
                     GestureDetector(
                         child: Icon(dropdownArrow, color: Colors.white),
                         onTap: () {
@@ -552,7 +564,20 @@ class _SchoolClassTitleState extends State<SchoolClassTitle> {
                               EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                           child: GestureDetector(
                               child: Icon(Icons.edit, color: Colors.white),
-                              onTap: null),
+                              onTap: (() {
+                                editClassDialog(context, widget.parent.name,
+                                        widget.parent.color)
+                                    .then((onValue) {
+                                  onValue.id = widget.parent.id;
+                                  if (onValue != null) {
+                                    DatabaseMethods.editItem(
+                                        SchoolClassDatabaseHelper.instance,
+                                        onValue);
+                                    Vals.classTypeController
+                                        .add(ControllerNums.cEditClass);
+                                  }
+                                });
+                              })),
                         ),
                         Padding(
                           padding: EdgeInsets.only(
@@ -794,6 +819,56 @@ addTypeDialog(BuildContext context) {
                         .pop(_controller.text);
                   } else
                     Navigator.of(context, rootNavigator: true).pop();
+                })
+          ],
+        );
+      });
+}
+
+editClassDialog(BuildContext context, String text, Color color) {
+  final _controller = TextEditingController();
+  ColorPicker myPicker = ColorPicker();
+  myPicker.setColor(color);
+  _controller.text = text;
+  return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Text("Edit Class"),
+                IconButton(
+                    icon: (Icon(Icons.close)),
+                    onPressed: () {
+                      Navigator.of(context, rootNavigator: true).pop();
+                    }),
+              ]),
+          content: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+            //add color picker here
+            TextField(
+                controller: _controller,
+                decoration: InputDecoration(
+                  hintText: "Class Name",
+                  suffixIcon: myPicker,
+                ))
+          ]),
+          actions: <Widget>[
+            FlatButton(
+                child: Text("SAVE"),
+                onPressed: () {
+                  //also check if color is the same
+                  if (_controller.text != "" &&
+                      (_controller.text != text || myPicker.color != color)) {
+                    print('determined to have changed, popping with value');
+                    SchoolClass editedClass = SchoolClass();
+                    editedClass.name = _controller.text;
+                    editedClass.color = myPicker.getColor();
+                    Navigator.of(context, rootNavigator: true).pop(editedClass);
+                  } else {
+                    print('determined to be the same, popping without value');
+                    Navigator.of(context, rootNavigator: true).pop();
+                  }
                 })
           ],
         );

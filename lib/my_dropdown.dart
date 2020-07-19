@@ -10,11 +10,10 @@ class MyDropdown extends StatefulWidget {
   String _currPicked;
   MyDropdown(this._items, this._icon, this._colors, this._currPicked,
       {this.controller});
-  _MyDropdownState myState;
+  _MyDropdownState myState = _MyDropdownState();
 
   @override
   _MyDropdownState createState() {
-    myState = _MyDropdownState();
     return myState;
   }
 

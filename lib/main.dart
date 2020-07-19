@@ -23,12 +23,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-          backgroundColor: Colors.blue,
+          scaffoldBackgroundColor: Col.ltblue,
           accentColor: Colors.orange,
-          appBarTheme: AppBarTheme(color: Colors.green),
+          appBarTheme: AppBarTheme(color: Col.dkblue),
           buttonTheme: ButtonThemeData(
               buttonColor: Colors.blue, disabledColor: Colors.amber)),
-      title: 'Items',
+      title: 'To-Do List',
       home: ItemList(),
     );
   }
@@ -49,16 +49,30 @@ class _ItemListState extends State<ItemList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Items'),
+        title: Text(
+          'To-Do List',
+          style: Vals.textStyle(context, size: 20, color: Col.ltblue),
+        ),
         actions: [
-          IconButton(icon: Icon(Icons.settings), onPressed: manage),
-          IconButton(icon: Icon(Icons.delete), onPressed: clearAll),
-          IconButton(icon: Icon(Icons.add), onPressed: _addItem, iconSize: 40)
+          IconButton(
+              icon: Icon(Icons.settings, color: Col.ltblue), onPressed: manage),
+          IconButton(
+              icon: Icon(Icons.delete, color: Col.ltblue), onPressed: clearAll),
+          IconButton(
+              icon: Icon(
+                Icons.add,
+                color: Col.ltblue,
+              ),
+              onPressed: _addItem,
+              iconSize: 40)
         ],
       ),
-      body: BuildLists(
-        controllerRefItems: itemController,
-        controllerRefCompleted: completedController,
+      body: Container(
+        color: Col.ltblue,
+        child: BuildLists(
+          controllerRefItems: itemController,
+          controllerRefCompleted: completedController,
+        ),
       ),
     );
   }
@@ -71,8 +85,10 @@ class _ItemListState extends State<ItemList> {
     Navigator.of(context)
         .push(MaterialPageRoute<void>(builder: (BuildContext context) {
       return Scaffold(
+        //backgroundColor: Col.blue,
         appBar: AppBar(
-          title: Text('Manage Classes'),
+          title: Text('Manage Classes',
+              style: Vals.textStyle(context, color: Col.ltblue, size: 20)),
           actions: <Widget>[
             IconButton(
                 icon: Icon(Icons.delete),
@@ -274,6 +290,7 @@ class _MyAnimatedListState extends State<MyAnimatedList> {
         widget.dbInstance, DatabaseTypes.itemDatabase);
     setState(() {
       items = itemsWidgetType;
+      sortItems();
     });
 
     if (atInit) {
@@ -291,6 +308,7 @@ class _MyAnimatedListState extends State<MyAnimatedList> {
         widget.dbInstance, DatabaseTypes.itemDatabase);
     setState(() {
       items = itemsWidgetType;
+      sortItems();
     });
 
     _listKey.currentState.insertItem(items.length - 1);
@@ -313,6 +331,7 @@ class _MyAnimatedListState extends State<MyAnimatedList> {
 
     setState(() {
       items = itemsWidgetType;
+      sortItems();
     });
   }
 
@@ -336,6 +355,82 @@ class _MyAnimatedListState extends State<MyAnimatedList> {
     setState(() {
       items = itemsWidgetType;
     });
+  }
+
+  Future<void> sortItems() async {
+    if (Sort.selected[0] == true) {
+      items.sort((a, b) {
+        final aT = a as TodoItemWidget;
+        final bT = b as TodoItemWidget;
+        if (compareByDate(aT, bT) != 0) return compareByDate(aT, bT);
+        if (compareByPriority(aT, bT) != 0) return compareByPriority(aT, bT);
+        if (compareByClass(aT, bT) != 0) return compareByClass(aT, bT);
+        return compareByType(aT, bT);
+      });
+    }
+
+    if (Sort.selected[1] == true) {
+      items.sort((a, b) {
+        final aT = a as TodoItemWidget;
+        final bT = b as TodoItemWidget;
+        if (compareByClass(aT, bT) != 0) return compareByClass(aT, bT);
+        if (compareByPriority(aT, bT) != 0) return compareByPriority(aT, bT);
+        if (compareByDate(aT, bT) != 0) return compareByDate(aT, bT);
+        return compareByType(aT, bT);
+      });
+    }
+
+    if (Sort.selected[2] == true) {
+      items.sort((a, b) {
+        final aT = a as TodoItemWidget;
+        final bT = b as TodoItemWidget;
+        if (compareByPriority(aT, bT) != 0) return compareByPriority(aT, bT);
+        if (compareByDate(aT, bT) != 0) return compareByDate(aT, bT);
+        if (compareByClass(aT, bT) != 0) return compareByClass(aT, bT);
+        return compareByType(aT, bT);
+      });
+    }
+  }
+
+  int compareByDate(TodoItemWidget a, TodoItemWidget b) {
+    DateTime aDue = a.due;
+    DateTime bDue = b.due;
+
+    if (aDue.toString() == DateTime.utc(1990, 12, 6, 3, 1, 7).toString())
+      aDue = DateTime.utc(2200);
+
+    if (bDue.toString() == DateTime.utc(1990, 12, 6, 3, 1, 7).toString())
+      bDue = DateTime.utc(2200);
+    return aDue.compareTo(bDue);
+  }
+
+  int compareByPriority(TodoItemWidget a, TodoItemWidget b) {
+    int aPriority = a.priority;
+    int bPriority = b.priority;
+
+    if (aPriority == 0) aPriority = 10;
+    if (bPriority == 0) bPriority = 10;
+    return aPriority.compareTo(bPriority);
+  }
+
+  int compareByClass(TodoItemWidget a, TodoItemWidget b) {
+    int aClass = a.classKey;
+    int bClass = b.classKey;
+
+    if (aClass == 0) aClass = 1000;
+    if (bClass == 0) bClass = 1000;
+
+    return aClass.compareTo(bClass);
+  }
+
+  int compareByType(TodoItemWidget a, TodoItemWidget b) {
+    int aType = a.typeKey;
+    int bType = b.typeKey;
+
+    if (aType == 0) aType = 1000;
+    if (bType == 0) bType = 1000;
+
+    return aType.compareTo(bType);
   }
 }
 
@@ -376,24 +471,89 @@ class _BuildListsState extends State<BuildLists> {
 
     return SingleChildScrollView(
         child: Column(
+      mainAxisAlignment: MainAxisAlignment.start,
       //controller: _controller,
       children: <Widget>[
-        myItemList,
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Text("Completed Items"),
-            Switch(
-              value: showCompleted,
-              onChanged: ((val) {
-                print("running on changed with val = $val");
-                setState(() {
-                  showCompleted = val;
-                  print("showCompleted is now $val");
-                });
-              }),
+        Padding(
+          padding: EdgeInsets.only(left: 20, right: 20, top: 20),
+          child: Container(
+            decoration: BoxDecoration(color: Col.teal),
+            child: Padding(
+              padding: EdgeInsets.only(left: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisSize: MainAxisSize.max,
+                children: <Widget>[
+                  Text("SORT BY: ",
+                      style: Vals.textStyle(context, color: Col.ltblue)),
+                  Expanded(
+                    child: Container(
+                      child: LayoutBuilder(builder: (context, constraints) {
+                        return ToggleButtons(
+                          renderBorder: false,
+                          constraints: BoxConstraints.expand(
+                            width: constraints.maxWidth / 3,
+                          ),
+                          children: <Widget>[
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: 5),
+                              child: Text(Sort.buttons[0],
+                                  style: Vals.textStyle(context,
+                                      color: Col.ltblue)),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: 5),
+                              child: Text(Sort.buttons[1],
+                                  style: Vals.textStyle(context,
+                                      color: Col.ltblue)),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: 5),
+                              child: Text(Sort.buttons[2],
+                                  style: Vals.textStyle(context,
+                                      color: Col.ltblue)),
+                            ),
+                          ],
+                          isSelected: Sort.selected,
+                          fillColor: Col.dkblue,
+                          onPressed: (int val) {
+                            Sort.setP(val);
+                            setState(() {});
+                          },
+                        );
+                      }),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
+          ),
+        ),
+        myItemList,
+        Container(
+          color: Col.dkblue,
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Text("Completed Items",
+                  style: Vals.textStyle(context, color: Col.ltblue)),
+              Switch(
+                activeColor: Col.teal,
+                inactiveTrackColor: Col.ltblue,
+                activeTrackColor: Col.teal,
+                inactiveThumbColor: Col.teal,
+                value: showCompleted,
+                onChanged: ((val) {
+                  print("running on changed with val = $val");
+                  setState(() {
+                    showCompleted = val;
+                    print("showCompleted is now $val");
+                  });
+                }),
+              ),
+            ],
+          ),
         ),
         buildIfShown(myCompletedList, showCompleted),
       ],

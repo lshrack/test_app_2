@@ -16,9 +16,11 @@ class ControllerNums {
   static int cAddType = 3;
   static int cDeleteType = 4;
   static int cEditType = 5;
+  static int cEditClass = 6;
 
   //used when class dropdown changes value, to know whether to drop type dropdown
   static int dChangeVal = 0;
+  static int dSetVals = 1;
 }
 
 class Vals {
@@ -39,8 +41,9 @@ class Vals {
       StreamController<int>.broadcast();
 
   static TextStyle textStyle(BuildContext context,
-      {var color = 0, double size = 18.0, bool bold = true}) {
+      {var color = 0, double size = 18.0, bool bold = false}) {
     return TextStyle(
+        fontFamily: 'Montserrat',
         color: color == 0 ? Theme.of(context).appBarTheme.color : color,
         fontWeight: bold ? FontWeight.bold : FontWeight.normal,
         fontSize: size);
@@ -56,5 +59,24 @@ class DatabaseTypes {
 class Col {
   static Color ab(BuildContext context) {
     return Theme.of(context).appBarTheme.color;
+  }
+
+  static Color dkblue = Color(0xff142850);
+  static Color blue = Color(0xff27496d);
+  static Color teal = Color(0xff00909e);
+  static Color ltblue = Color(0xffdae1e7);
+}
+
+class Sort {
+  static int picked = 0;
+  static List<String> buttons = ['Date', 'Class', 'Priority'];
+  static List<bool> selected = [true, false, false];
+  static setP(int inPicked) {
+    for (int i = 0; i < selected.length; i++) {
+      selected[i] = false;
+      if (i == inPicked) {
+        selected[i] = true;
+      }
+    }
   }
 }
