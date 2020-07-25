@@ -43,7 +43,7 @@ class Vals {
   static TextStyle textStyle(BuildContext context,
       {var color = 0, double size = 18.0, bool bold = false}) {
     return TextStyle(
-        fontFamily: 'Montserrat',
+        //fontFamily: 'Gotham',
         color: color == 0 ? Theme.of(context).appBarTheme.color : color,
         fontWeight: bold ? FontWeight.bold : FontWeight.normal,
         fontSize: size);
@@ -65,6 +65,12 @@ class Col {
   static Color blue = Color(0xff27496d);
   static Color teal = Color(0xff00909e);
   static Color ltblue = Color(0xffdae1e7);
+
+/*
+  static Color dkblue = Color(0xffeb6383);
+  static Color blue = Color(0xfffa9191);
+  static Color ltblue = Color(0xffffe9c5);
+  static Color teal = Color(0xffb4f2e1);*/
 }
 
 class Sort {

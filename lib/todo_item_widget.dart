@@ -269,10 +269,13 @@ class _BuildTileState extends State<BuildTile> {
             ),
           ),
           ifExpanded(_expanded),
-          Divider(
-            thickness: 10,
-            height: 10,
-            color: Col.ltblue,
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 10),
+            child: Divider(
+              thickness: 2,
+              height: 10,
+              color: Col.ltblue,
+            ),
           ),
         ]));
   }

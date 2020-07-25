@@ -57,6 +57,10 @@ flutter:
           style: italic
         - asset: google_fonts/Montserrat-Bold.ttf
           weight: 500
+    - family: Gotham
+      fonts:
+        - asset: google_fonts/GothamBook.ttf
+        
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
