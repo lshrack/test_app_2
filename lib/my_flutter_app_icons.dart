@@ -35,5 +35,6 @@ class MyFlutterApp {
 
   static const IconData pine_tree = IconData(0xea62, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData exclamation_circle = IconData(0xf06a, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData circle_empty = IconData(0xf10c, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData circle = IconData(0xf111, fontFamily: _kFontFam, fontPackage: _kFontPkg);
 }

@@ -39,6 +39,10 @@ class ItemList extends StatefulWidget {
   Widget getAppBar() {
     return myState.buildAppBar();
   }
+
+  Color getColor() {
+    return Col.blue;
+  }
 }
 
 class _ItemListState extends State<ItemList> {
@@ -95,7 +99,10 @@ class _ItemListState extends State<ItemList> {
               style: Vals.textStyle(context, color: Col.ltblue, size: 20)),
           actions: <Widget>[
             IconButton(
-                icon: Icon(Icons.delete),
+                icon: Icon(
+                  Icons.delete,
+                  color: Col.ltblue,
+                ),
                 onPressed: (() async {
                   await DatabaseMethods.clearAll(
                       SchoolClassDatabaseHelper.instance);
@@ -246,7 +253,9 @@ class _MyAnimatedListState extends State<MyAnimatedList> {
       initialItemCount: itemCount,
       itemBuilder: (context, i, animation) {
         if (items.length == 0) {
-          return Container();
+          return Container(
+            child: Text("Nothing to do! Enjoy your time off!"),
+          );
         }
 
         final index = i;
@@ -257,7 +266,9 @@ class _MyAnimatedListState extends State<MyAnimatedList> {
               controllerRefItem: widget.controllerRefItem,
               controllerRefCompleted: widget.controllerRefCompleted,
               index: index,
-              completed: widget.completed);
+              completed: widget.completed,
+              lastItem: index == (items.length - 1),
+              firstItem: index == 0);
         }
 
         return Container();
@@ -474,94 +485,108 @@ class _BuildListsState extends State<BuildLists> {
     widget.controllerRefCompleted.add(ControllerNums.update);
 
     return SingleChildScrollView(
-        child: Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      //controller: _controller,
-      children: <Widget>[
-        Padding(
-          padding: EdgeInsets.only(left: 20, right: 20, top: 20),
-          child: Container(
-            decoration: BoxDecoration(color: Col.teal),
-            child: Padding(
-              padding: EdgeInsets.only(left: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                mainAxisSize: MainAxisSize.max,
-                children: <Widget>[
-                  Text("SORT BY: ",
-                      style: Vals.textStyle(context, color: Col.ltblue)),
-                  Expanded(
-                    child: Container(
-                      child: LayoutBuilder(builder: (context, constraints) {
-                        return ToggleButtons(
-                          renderBorder: false,
-                          constraints: BoxConstraints.expand(
-                            width: constraints.maxWidth / 3,
+        child: Container(
+            color: Col.blue,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              //controller: _controller,
+              children: <Widget>[
+                Padding(
+                  padding:
+                      EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 10),
+                  child: Container(
+                    decoration: BoxDecoration(
+                        color: Col.teal,
+                        borderRadius: BorderRadius.circular(2)),
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisSize: MainAxisSize.max,
+                        children: <Widget>[
+                          Text("SORT BY: ",
+                              style:
+                                  Vals.textStyle(context, color: Col.ltblue)),
+                          Expanded(
+                            child: Container(
+                              child: LayoutBuilder(
+                                  builder: (context, constraints) {
+                                return ToggleButtons(
+                                  renderBorder: false,
+                                  constraints: BoxConstraints.expand(
+                                    width: constraints.maxWidth / 3,
+                                  ),
+                                  children: <Widget>[
+                                    Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 5),
+                                      child: Text(Sort.buttons[0],
+                                          style: Vals.textStyle(context,
+                                              color: Col.ltblue)),
+                                    ),
+                                    Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 5),
+                                      child: Text(Sort.buttons[1],
+                                          style: Vals.textStyle(context,
+                                              color: Col.ltblue)),
+                                    ),
+                                    Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 5),
+                                      child: Text(Sort.buttons[2],
+                                          style: Vals.textStyle(context,
+                                              color: Col.ltblue)),
+                                    ),
+                                  ],
+                                  isSelected: Sort.selected,
+                                  fillColor: Col.dkblue,
+                                  onPressed: (int val) {
+                                    Sort.setP(val);
+                                    setState(() {});
+                                  },
+                                );
+                              }),
+                            ),
                           ),
-                          children: <Widget>[
-                            Padding(
-                              padding: EdgeInsets.symmetric(vertical: 5),
-                              child: Text(Sort.buttons[0],
-                                  style: Vals.textStyle(context,
-                                      color: Col.ltblue)),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.symmetric(vertical: 5),
-                              child: Text(Sort.buttons[1],
-                                  style: Vals.textStyle(context,
-                                      color: Col.ltblue)),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.symmetric(vertical: 5),
-                              child: Text(Sort.buttons[2],
-                                  style: Vals.textStyle(context,
-                                      color: Col.ltblue)),
-                            ),
-                          ],
-                          isSelected: Sort.selected,
-                          fillColor: Col.dkblue,
-                          onPressed: (int val) {
-                            Sort.setP(val);
-                            setState(() {});
-                          },
-                        );
-                      }),
+                        ],
+                      ),
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        myItemList,
-        Container(
-          color: Col.dkblue,
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Text("Completed Items",
-                  style: Vals.textStyle(context, color: Col.ltblue)),
-              Switch(
-                activeColor: Col.teal,
-                inactiveTrackColor: Col.ltblue,
-                activeTrackColor: Col.teal,
-                inactiveThumbColor: Col.teal,
-                value: showCompleted,
-                onChanged: ((val) {
-                  print("running on changed with val = $val");
-                  setState(() {
-                    showCompleted = val;
-                    print("showCompleted is now $val");
-                  });
-                }),
-              ),
-            ],
-          ),
-        ),
-        buildIfShown(myCompletedList, showCompleted),
-      ],
-    ));
+                ),
+                myItemList,
+                Container(height: 10),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                      color: Col.dkblue,
+                      border: Border.symmetric(
+                          vertical: BorderSide(color: Col.ltblue, width: 2))),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Text("Completed Tasks",
+                          style: Vals.textStyle(context, color: Col.ltblue)),
+                      Switch(
+                        activeColor: Col.teal,
+                        inactiveTrackColor: Col.ltblue,
+                        activeTrackColor: Col.teal,
+                        inactiveThumbColor: Col.teal,
+                        value: showCompleted,
+                        onChanged: ((val) {
+                          print("running on changed with val = $val");
+                          setState(() {
+                            showCompleted = val;
+                            print("showCompleted is now $val");
+                          });
+                        }),
+                      ),
+                    ],
+                  ),
+                ),
+                buildIfShown(myCompletedList, showCompleted),
+              ],
+            )));
   }
 
   Widget buildIfShown(Widget widget, bool show) {

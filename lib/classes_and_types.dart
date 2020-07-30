@@ -34,7 +34,7 @@ class _ClassesAndTypesState extends State<ClassesAndTypes> {
                 FlatButton(
                     child: Text("Add Class",
                         style: Vals.textStyle(context, color: Col.ltblue)),
-                    color: Col.blue,
+                    color: Col.teal,
                     onPressed: () {
                       addClassDialog(context).then((onValue) {
                         if (onValue != null) updateAddClass(onValue);
@@ -201,35 +201,37 @@ class _ClassViewState extends State<ClassView> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        decoration: BoxDecoration(
-            border: Border.all(color: Col.blue),
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(5)),
-        child: AnimatedList(
-            physics: NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            padding: EdgeInsets.all(10),
-            key: _listKey,
-            initialItemCount: itemCount,
-            itemBuilder: (context, i, animation) {
-              if (classes.length == 0) {
-                return Container();
-              }
+    return classes.length != 0
+        ? Container(
+            decoration: BoxDecoration(
+                border: Border.all(color: Col.blue),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(5)),
+            child: AnimatedList(
+                physics: NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                padding: EdgeInsets.all(10),
+                key: _listKey,
+                initialItemCount: itemCount,
+                itemBuilder: (context, i, animation) {
+                  if (classes.length == 0) {
+                    return Container();
+                  }
 
-              final index = i;
+                  final index = i;
 
-              if (index < classes.length) {
-                try {
-                  final currClass = classes[index];
-                  return classBuilder(currClass, index);
-                } catch (e) {
+                  if (index < classes.length) {
+                    try {
+                      final currClass = classes[index];
+                      return classBuilder(currClass, index);
+                    } catch (e) {
+                      return Container();
+                    }
+                  }
+
                   return Container();
-                }
-              }
-
-              return Container();
-            }));
+                }))
+        : Container(child: Text("Add your classes here!"));
   }
 
   Widget classBuilder(ItemWidget classToBuild, int index) {

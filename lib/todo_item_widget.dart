@@ -38,7 +38,7 @@ class TodoItemWidget extends ItemWidget {
         children: <Widget>[
           Flexible(
               child: Text('$title',
-                  style: Vals.textStyle(context, size: 17, color: Col.ltblue)),
+                  style: Vals.textStyle(context, size: 17, color: Col.dkblue)),
               fit: FlexFit.tight),
           priorityToWidget(priority),
         ],
@@ -54,12 +54,12 @@ class TodoItemWidget extends ItemWidget {
       children: <Widget>[
         Flexible(
             child: Text("${DateTimeToString(due)}",
-                style: Vals.textStyle(context, size: 14, color: Col.ltblue)),
+                style: Vals.textStyle(context, size: 14, color: Col.dkblue)),
             flex: 6),
         Flexible(
             child: Text(typeName,
                 textAlign: TextAlign.right,
-                style: Vals.textStyle(context, size: 14, color: Col.ltblue)),
+                style: Vals.textStyle(context, size: 14, color: Col.dkblue)),
             flex: 4),
       ],
     );
@@ -213,13 +213,17 @@ class BuildTile extends StatefulWidget {
   final controllerRefItem;
   final controllerRefCompleted;
   final int index;
+  final bool lastItem;
+  final bool firstItem;
   bool completed;
   BuildTile(
       {this.item,
       this.controllerRefItem,
       this.controllerRefCompleted,
       this.index,
-      this.completed});
+      this.completed,
+      this.lastItem = false,
+      this.firstItem = false});
   @override
   _BuildTileState createState() => _BuildTileState();
 }
@@ -234,7 +238,14 @@ class _BuildTileState extends State<BuildTile> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        color: Col.blue,
+        decoration: BoxDecoration(
+            color: Col.ltblue,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(widget.firstItem ? 5 : 0),
+              topRight: Radius.circular(widget.firstItem ? 5 : 0),
+              bottomLeft: Radius.circular(widget.lastItem ? 5 : 0),
+              bottomRight: Radius.circular(widget.lastItem ? 5 : 0),
+            )),
         child: Column(children: <Widget>[
           Container(
             padding: EdgeInsets.symmetric(vertical: 10),
@@ -255,7 +266,7 @@ class _BuildTileState extends State<BuildTile> {
               trailing: IconButton(
                 icon: Icon(
                   Icons.more_vert,
-                  color: Col.ltblue,
+                  color: Col.dkblue,
                 ),
                 onPressed: () {
                   setState(() {
@@ -269,14 +280,16 @@ class _BuildTileState extends State<BuildTile> {
             ),
           ),
           ifExpanded(_expanded),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 10),
-            child: Divider(
-              thickness: 2,
-              height: 10,
-              color: Col.ltblue,
-            ),
-          ),
+          !widget.lastItem
+              ? Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  child: Divider(
+                    thickness: 2,
+                    height: 10,
+                    color: Col.blue,
+                  ),
+                )
+              : Container(),
         ]));
   }
 
@@ -291,7 +304,7 @@ class _BuildTileState extends State<BuildTile> {
         child: Row(
           children: <Widget>[
             IconButton(
-                icon: Icon(Icons.delete),
+                icon: Icon(Icons.delete, color: Col.dkblue),
                 onPressed: () async {
                   id = widget.item.id;
                   print("Going to delete item at id $id");
@@ -300,7 +313,8 @@ class _BuildTileState extends State<BuildTile> {
                   await DatabaseMethods.deleteItem(id, instance);
                   controllerRef.add(int.parse('2${widget.index}'));
                 }),
-            IconButton(icon: Icon(Icons.edit), onPressed: _editItem)
+            IconButton(
+                icon: Icon(Icons.edit, color: Col.dkblue), onPressed: _editItem)
           ],
           mainAxisAlignment: MainAxisAlignment.end,
         ));
@@ -435,11 +449,13 @@ class MyCheckbox extends StatefulWidget {
 class _MyCheckboxState extends State<MyCheckbox> {
   @override
   Widget build(BuildContext context) {
-    return Checkbox(
-        activeColor: widget.color != null ? widget.color : Col.teal,
-        checkColor: Col.ltblue,
-        value: widget.completed,
-        onChanged: (newVal) async {
+    return IconButton(
+        icon: Icon(
+            !widget.completed ? MyFlutterApp.circle_empty : Icons.check_circle,
+            color: widget.color != null && widget.color != Colors.white
+                ? widget.color
+                : Col.dkblue),
+        onPressed: () async {
           if (!widget.completed) {
             Item itemToSave = Item();
             itemToSave.name = widget.item.title;
