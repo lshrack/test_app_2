@@ -1,6 +1,5 @@
-//test_app_2 by Lauren Shrack
-//Priority 1 here will be implementing a to-do list view,
-//similar to the one previously implemented in Android Studio
+//contains main code for todo list page
+
 import 'package:flutter/material.dart';
 import 'package:test_app_2/classes_and_types.dart';
 import 'item_widget.dart';
@@ -13,31 +12,17 @@ import 'my_dropdown.dart';
 import 'saved_vals.dart';
 import 'class_type_picker.dart';
 
-class TodoPage extends StatelessWidget {
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-          scaffoldBackgroundColor: Col.ltblue,
-          accentColor: Colors.orange,
-          appBarTheme: AppBarTheme(color: Col.dkblue),
-          buttonTheme: ButtonThemeData(
-              buttonColor: Colors.blue, disabledColor: Colors.amber)),
-      title: 'To-Do List',
-      home: ItemList(),
-    );
-  }
-}
-
+//Main page that will return to home widget
 class ItemList extends StatefulWidget {
+  final BuildContext context;
+  ItemList(this.context);
   _ItemListState myState = _ItemListState();
 
   @override
   _ItemListState createState() => myState;
 
   Widget getAppBar() {
-    return myState.buildAppBar();
+    return myState.buildAppBar(context);
   }
 
   Color getColor() {
@@ -52,15 +37,26 @@ class _ItemListState extends State<ItemList> {
   final itemDbInstance = ItemDatabaseHelper.instance;
   final completedItemDbInstance = CompletedItemDatabaseHelper.instance;
 
-  Widget buildAppBar() {
+  Widget buildAppBar(BuildContext context) {
     return AppBar(
       title: Text(
         'To-Do List',
         style: Vals.textStyle(context, size: 20, color: Col.ltblue),
       ),
+      flexibleSpace: Container(
+        decoration: BoxDecoration(
+            gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: <Color>[Col.dkblue, Col.blue])),
+      ),
       actions: [
         IconButton(
-            icon: Icon(Icons.settings, color: Col.ltblue), onPressed: manage),
+          icon: Icon(Icons.settings, color: Col.ltblue),
+          onPressed: () {
+            manage(context);
+          },
+        ),
         IconButton(
             icon: Icon(Icons.delete, color: Col.ltblue), onPressed: clearAll),
         IconButton(
@@ -68,7 +64,9 @@ class _ItemListState extends State<ItemList> {
               Icons.add,
               color: Col.ltblue,
             ),
-            onPressed: _addItem,
+            onPressed: () {
+              _addItem(context);
+            },
             iconSize: 40)
       ],
     );
@@ -85,7 +83,7 @@ class _ItemListState extends State<ItemList> {
     );
   }
 
-  void manage() async {
+  void manage(BuildContext context) async {
     List<ItemWidget> classes = await DatabaseMethods.readAllAsWidget(
         SchoolClassDatabaseHelper.instance, DatabaseTypes.classDatabase);
     List<ItemWidget> types = await DatabaseMethods.readAllAsWidget(
@@ -120,20 +118,20 @@ class _ItemListState extends State<ItemList> {
     }));
   }
 
-  void _addItem() {
+  void _addItem(BuildContext context) {
     Navigator.of(context)
         .push(MaterialPageRoute<void>(builder: (BuildContext context) {
       return Scaffold(
         appBar: AppBar(
           title: Text('Add Item'),
         ),
-        body: buildAddPage(),
+        body: buildAddPage(context),
         resizeToAvoidBottomPadding: false,
       );
     }));
   }
 
-  Widget buildAddPage() {
+  Widget buildAddPage(BuildContext context) {
     final myTextController = TextEditingController();
     final myDateTimePicker = DateTimeWidget();
     final myPriorityDropdown = MyDropdown(
@@ -206,6 +204,7 @@ class _ItemListState extends State<ItemList> {
   void _insertItem(Item newItem) {
     DatabaseMethods.save(newItem, itemDbInstance);
     DatabaseMethods.readAll(itemDbInstance);
+    print("Adding update add item to controller");
     itemController.add(ControllerNums.updateAddItem);
   }
 
@@ -243,8 +242,6 @@ class _MyAnimatedListState extends State<MyAnimatedList> {
 
   @override
   Widget build(BuildContext context) {
-    print("Building. completed is ${widget.completed}");
-    print("my initial item count is $itemCount");
     return AnimatedList(
       physics: NeverScrollableScrollPhysics(),
       shrinkWrap: true,
@@ -300,7 +297,6 @@ class _MyAnimatedListState extends State<MyAnimatedList> {
   }
 
   void _update() async {
-    print("Updating. completed is ${widget.completed}");
     List<ItemWidget> itemsWidgetType = await DatabaseMethods.readAllAsWidget(
         widget.dbInstance, DatabaseTypes.itemDatabase);
     setState(() {
@@ -319,6 +315,7 @@ class _MyAnimatedListState extends State<MyAnimatedList> {
   }
 
   void _updateAddItem() async {
+    print("running update add item method");
     List<ItemWidget> itemsWidgetType = await DatabaseMethods.readAllAsWidget(
         widget.dbInstance, DatabaseTypes.itemDatabase);
     setState(() {

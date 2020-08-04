@@ -11,21 +11,13 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int _currentIndex = 0;
-  ItemList todoPage = ItemList();
-  List<Widget> _appBars;
-  List<Widget> _bodies;
-  List<Color> _colors;
-
-  @override
-  void initState() {
-    super.initState();
-    _bodies = [Container(), todoPage, Container()];
-    _appBars = [AppBar(), todoPage.getAppBar(), AppBar()];
-    _colors = [Colors.white, todoPage.getColor(), Colors.white];
-  }
 
   @override
   Widget build(BuildContext context) {
+    ItemList itemList = ItemList(context);
+    List<Widget> _appBars = [AppBar(), itemList.getAppBar(), AppBar()];
+    List<Widget> _bodies = [Container(), itemList, Container()];
+    List<Color> _colors = [Colors.white, itemList.getColor(), Colors.white];
     return Scaffold(
       backgroundColor: _colors[_currentIndex],
       appBar: _appBars[_currentIndex],
