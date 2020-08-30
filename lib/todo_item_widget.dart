@@ -603,8 +603,9 @@ class _SchoolClassTitleState extends State<SchoolClassTitle> {
                               left: 10, right: 10, bottom: 5, top: 10),
                           child: GestureDetector(
                               child: Icon(Icons.delete, color: Colors.white),
-                              onTap: () {
-                                DatabaseMethods.deleteItem(widget.parent.id,
+                              onTap: () async {
+                                await DatabaseMethods.deleteItem(
+                                    widget.parent.id,
                                     SchoolClassDatabaseHelper.instance);
                                 widget.controller
                                     .add(ControllerNums.cDeleteClass);

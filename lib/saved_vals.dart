@@ -86,3 +86,7 @@ class Sort {
     }
   }
 }
+
+class Prefs {
+  static String getNotifications = "getNotifications";
+}

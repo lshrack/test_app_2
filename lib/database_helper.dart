@@ -12,6 +12,7 @@ final String tableItems = 'items';
 final String completedItems = 'completed';
 final String schoolClasses = 'school_classes';
 final String assignTypes = 'assign_types';
+final String trees = 'trees';
 final String columnId = '_id';
 final String columnName = 'word';
 final String columnDue = 'due';
@@ -19,6 +20,9 @@ final String columnPriority = 'priority';
 final String columnClassKey = 'class_key';
 final String columnTypeKey = 'type_key';
 final String columnColor = 'color';
+final String columnXLoc = 'xloc';
+final String columnYLoc = 'yloc';
+final String columnTreeType = 'tree_type';
 
 abstract class DatabaseHelper {
   Future<int> insert(Entry entry);
@@ -279,6 +283,41 @@ class AssignType extends Entry {
 
   String toString() {
     return '$id $name tied to class with id $classKey';
+  }
+}
+
+//************************************************************************************************\\
+//TREEENTRY CLASS
+//************************************************************************************************\\
+
+class TreeEntry extends Entry {
+  int id;
+  double xLoc;
+  double yLoc;
+  int treeType;
+  TreeEntry();
+
+  TreeEntry.fromMap(Map<String, dynamic> map) {
+    id = map[columnId];
+    xLoc = map[columnXLoc];
+    yLoc = map[columnYLoc];
+    treeType = map[columnTreeType];
+  }
+  Map<String, dynamic> toMap() {
+    var map = <String, dynamic>{
+      columnXLoc: xLoc,
+      columnYLoc: yLoc,
+      columnTreeType: treeType
+    };
+    if (id != null) {
+      map[columnId] = id;
+    }
+
+    return map;
+  }
+
+  String toString() {
+    return 'tree $id at ($xLoc,$yLoc), type $treeType';
   }
 }
 
@@ -716,6 +755,111 @@ class AssignTypeDatabaseHelper extends DatabaseHelper {
   Future<void> update(Entry entry) async {
     final db = await database;
     await db.update(assignTypes, entry.toMap(),
+        where: "$columnId = ?", whereArgs: [entry.id]);
+  }
+}
+
+//************************************************************************************************\\
+//HELPER FOR TREE DATABASE
+//************************************************************************************************\\
+
+// singleton class to manage the database
+class TreeDatabaseHelper extends DatabaseHelper {
+  // This is the actual database filename that is saved in the docs directory.
+  static final _databaseName = "TreeDatabase.db";
+  // Increment this version when you need to change the schema.
+  static final _databaseVersion = 1;
+
+  // Make this a singleton class.
+  TreeDatabaseHelper._privateConstructor();
+  static final TreeDatabaseHelper instance =
+      TreeDatabaseHelper._privateConstructor();
+
+  // Only allow a single open connection to the database.
+  static Database _database;
+  Future<Database> get database async {
+    if (_database != null) _database.close();
+    _database = await _initDatabase();
+    return _database;
+  }
+
+  // open the database
+  _initDatabase() async {
+    // The path_provider plugin gets the right directory for Android or iOS.
+    Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    String path = join(documentsDirectory.path, _databaseName);
+    // Open the database. Can also add an onUpdate callback parameter.
+    return await openDatabase(path,
+        version: _databaseVersion, onCreate: _onCreate);
+  }
+
+  // SQL string to create the database
+  Future _onCreate(Database db, int version) async {
+    await db.execute('''
+              CREATE TABLE $trees (
+                $columnId INTEGER PRIMARY KEY,
+                $columnXLoc DOUBLE NOT NULL,
+                $columnYLoc DOUBLE NOT NULL,
+                $columnTreeType INT NOT NULL
+              )
+              ''');
+  }
+
+  // Database helper methods:
+  Future<int> insert(Entry item) async {
+    Database db = await database;
+    int id = await db.insert(trees, item.toMap());
+    return id;
+  }
+
+  Future<TreeEntry> queryEntry(int id) async {
+    Database db = await database;
+    List<Map> maps = await db.query(trees,
+        columns: [columnId, columnXLoc, columnYLoc, columnTreeType],
+        where: '$columnId = ?',
+        whereArgs: [id]);
+    if (maps.length > 0) {
+      return TreeEntry.fromMap(maps.first);
+    }
+    return null;
+  }
+
+  Future<List<TreeEntry>> queryAllEntries() async {
+    Database db = await database;
+    List<Map> maps = await db.query(trees);
+
+    if (maps.length == 0) {
+      return [];
+    }
+
+    List<TreeEntry> listTypes = [TreeEntry.fromMap(maps.first)];
+
+    for (int i = 1; i < maps.length; i++) {
+      listTypes.add(TreeEntry.fromMap(maps[i]));
+    }
+
+    return listTypes;
+  }
+
+  Future<void> deleteAllEntries() async {
+    List<TreeEntry> items = await queryAllEntries();
+
+    if (items != null) {
+      items.forEach((item) {
+        deleteEntry(item.id);
+      });
+    }
+    await queryAllEntries();
+  }
+
+  Future<void> deleteEntry(int id) async {
+    final db = await database;
+    await db.delete(trees, where: "$columnId = ?", whereArgs: [id]);
+  }
+
+  Future<void> update(Entry entry) async {
+    final db = await database;
+    await db.update(trees, entry.toMap(),
         where: "$columnId = ?", whereArgs: [entry.id]);
   }
 }

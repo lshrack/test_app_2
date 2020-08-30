@@ -201,37 +201,35 @@ class _ClassViewState extends State<ClassView> {
 
   @override
   Widget build(BuildContext context) {
-    return classes.length != 0
-        ? Container(
-            decoration: BoxDecoration(
-                border: Border.all(color: Col.blue),
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(5)),
-            child: AnimatedList(
-                physics: NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                padding: EdgeInsets.all(10),
-                key: _listKey,
-                initialItemCount: itemCount,
-                itemBuilder: (context, i, animation) {
-                  if (classes.length == 0) {
-                    return Container();
-                  }
+    return Container(
+        decoration: BoxDecoration(
+            border: Border.all(color: Col.blue),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(5)),
+        child: AnimatedList(
+            physics: NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            padding: EdgeInsets.all(10),
+            key: _listKey,
+            initialItemCount: itemCount,
+            itemBuilder: (context, i, animation) {
+              if (classes.length == 0) {
+                return Container();
+              }
 
-                  final index = i;
+              final index = i;
 
-                  if (index < classes.length) {
-                    try {
-                      final currClass = classes[index];
-                      return classBuilder(currClass, index);
-                    } catch (e) {
-                      return Container();
-                    }
-                  }
-
+              if (index < classes.length) {
+                try {
+                  final currClass = classes[index];
+                  return classBuilder(currClass, index);
+                } catch (e) {
                   return Container();
-                }))
-        : Container(child: Text("Add your classes here!"));
+                }
+              }
+
+              return Container();
+            }));
   }
 
   Widget classBuilder(ItemWidget classToBuild, int index) {
@@ -241,6 +239,10 @@ class _ClassViewState extends State<ClassView> {
     if (firstBuild && typeControllers.length < classes.length) {
       print("adding type controller at ${typeControllers.length}");
       typeControllers.add(StreamController<int>.broadcast());
+    }
+
+    if (typeControllers[index] == null) {
+      print("My type controller at this index is NULL");
     }
 
     return (classToBuild as SchoolClassWidget)
@@ -353,8 +355,10 @@ class _TypeViewState extends State<TypeView> {
     widget.myStream.listen((int myNum) async {
       print("got a val!");
       if (myNum == ControllerNums.cAddType) {
+        print("gonna insert item at ${types.length}");
         _listKey.currentState.insertItem(types.length);
         await setTypes();
+        print("went through setTypes() and now types.length = ${types.length}");
       } else if (int.parse(myNum.toString().substring(0, 1)) ==
           ControllerNums.cDeleteType) {
         if (myNum.toString().length > 1) {
@@ -368,14 +372,15 @@ class _TypeViewState extends State<TypeView> {
           await DatabaseMethods.deleteItem(
               types[i].id, AssignTypeDatabaseHelper.instance);
 
-          _listKey.currentState.removeItem(i, ((context, animation) {
-            return Container();
-          }));
+          if (_listKey.currentState != null)
+            _listKey.currentState.removeItem(i, ((context, animation) {
+              return Container();
+            }));
         }
 
         types = [];
 
-        setState(() {});
+        if (this.mounted) setState(() {});
       }
     });
   }
@@ -484,5 +489,42 @@ class _ColorPickerState extends State<ColorPicker> {
         ],
       ),
     );
+  }
+}
+
+class Launch {
+  static void manage(BuildContext context) async {
+    List<ItemWidget> classes = await DatabaseMethods.readAllAsWidget(
+        SchoolClassDatabaseHelper.instance, DatabaseTypes.classDatabase);
+    List<ItemWidget> types = await DatabaseMethods.readAllAsWidget(
+        AssignTypeDatabaseHelper.instance, DatabaseTypes.typeDatabase);
+    Navigator.of(context)
+        .push(MaterialPageRoute<void>(builder: (BuildContext context) {
+      return Scaffold(
+        //backgroundColor: Col.blue,
+        appBar: AppBar(
+          title: Text('Manage Classes',
+              style: Vals.textStyle(context, color: Col.ltblue, size: 20)),
+          actions: <Widget>[
+            IconButton(
+                icon: Icon(
+                  Icons.delete,
+                  color: Col.ltblue,
+                ),
+                onPressed: (() async {
+                  await DatabaseMethods.clearAll(
+                      SchoolClassDatabaseHelper.instance);
+                  await DatabaseMethods.clearAll(
+                      AssignTypeDatabaseHelper.instance);
+                  Vals.classTypeController.add(ControllerNums.cClearAll);
+                })),
+          ],
+        ),
+        body: ClassesAndTypes(
+          myStream: Vals.classTypeController.stream,
+        ),
+        resizeToAvoidBottomPadding: false,
+      );
+    }));
   }
 }

@@ -54,7 +54,7 @@ class _ItemListState extends State<ItemList> {
         IconButton(
           icon: Icon(Icons.settings, color: Col.ltblue),
           onPressed: () {
-            manage(context);
+            Launch.manage(context);
           },
         ),
         IconButton(
@@ -81,41 +81,6 @@ class _ItemListState extends State<ItemList> {
         controllerRefCompleted: completedController,
       ),
     );
-  }
-
-  void manage(BuildContext context) async {
-    List<ItemWidget> classes = await DatabaseMethods.readAllAsWidget(
-        SchoolClassDatabaseHelper.instance, DatabaseTypes.classDatabase);
-    List<ItemWidget> types = await DatabaseMethods.readAllAsWidget(
-        AssignTypeDatabaseHelper.instance, DatabaseTypes.typeDatabase);
-    Navigator.of(context)
-        .push(MaterialPageRoute<void>(builder: (BuildContext context) {
-      return Scaffold(
-        //backgroundColor: Col.blue,
-        appBar: AppBar(
-          title: Text('Manage Classes',
-              style: Vals.textStyle(context, color: Col.ltblue, size: 20)),
-          actions: <Widget>[
-            IconButton(
-                icon: Icon(
-                  Icons.delete,
-                  color: Col.ltblue,
-                ),
-                onPressed: (() async {
-                  await DatabaseMethods.clearAll(
-                      SchoolClassDatabaseHelper.instance);
-                  await DatabaseMethods.clearAll(
-                      AssignTypeDatabaseHelper.instance);
-                  Vals.classTypeController.add(ControllerNums.cClearAll);
-                })),
-          ],
-        ),
-        body: ClassesAndTypes(
-          myStream: Vals.classTypeController.stream,
-        ),
-        resizeToAvoidBottomPadding: false,
-      );
-    }));
   }
 
   void _addItem(BuildContext context) {
@@ -299,10 +264,11 @@ class _MyAnimatedListState extends State<MyAnimatedList> {
   void _update() async {
     List<ItemWidget> itemsWidgetType = await DatabaseMethods.readAllAsWidget(
         widget.dbInstance, DatabaseTypes.itemDatabase);
-    setState(() {
-      items = itemsWidgetType;
-      sortItems();
-    });
+    if (this.mounted)
+      setState(() {
+        items = itemsWidgetType;
+        sortItems();
+      });
 
     if (atInit) {
       for (int i = 0; i < items.length; i++) {
@@ -311,17 +277,18 @@ class _MyAnimatedListState extends State<MyAnimatedList> {
       atInit = false;
     }
 
-    _listKey.currentState.build(context);
+    if (this.mounted) _listKey.currentState.build(context);
   }
 
   void _updateAddItem() async {
     print("running update add item method");
     List<ItemWidget> itemsWidgetType = await DatabaseMethods.readAllAsWidget(
         widget.dbInstance, DatabaseTypes.itemDatabase);
-    setState(() {
-      items = itemsWidgetType;
-      sortItems();
-    });
+    if (this.mounted)
+      setState(() {
+        items = itemsWidgetType;
+        sortItems();
+      });
 
     _listKey.currentState.insertItem(items.length - 1);
   }
@@ -341,10 +308,11 @@ class _MyAnimatedListState extends State<MyAnimatedList> {
     };
     _listKey.currentState.removeItem(index, builder);
 
-    setState(() {
-      items = itemsWidgetType;
-      sortItems();
-    });
+    if (this.mounted)
+      setState(() {
+        items = itemsWidgetType;
+        sortItems();
+      });
   }
 
   void _updateClearAll() {
@@ -364,9 +332,10 @@ class _MyAnimatedListState extends State<MyAnimatedList> {
       _listKey.currentState.removeItem(i, builder);
     }
 
-    setState(() {
-      items = itemsWidgetType;
-    });
+    if (this.mounted)
+      setState(() {
+        items = itemsWidgetType;
+      });
   }
 
   Future<void> sortItems() async {
@@ -540,7 +509,7 @@ class _BuildListsState extends State<BuildLists> {
                                   fillColor: Col.dkblue,
                                   onPressed: (int val) {
                                     Sort.setP(val);
-                                    setState(() {});
+                                    if (this.mounted) setState(() {});
                                   },
                                 );
                               }),
@@ -572,10 +541,11 @@ class _BuildListsState extends State<BuildLists> {
                         value: showCompleted,
                         onChanged: ((val) {
                           print("running on changed with val = $val");
-                          setState(() {
-                            showCompleted = val;
-                            print("showCompleted is now $val");
-                          });
+                          if (this.mounted)
+                            setState(() {
+                              showCompleted = val;
+                              print("showCompleted is now $val");
+                            });
                         }),
                       ),
                     ],

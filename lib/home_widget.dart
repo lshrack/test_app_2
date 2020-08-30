@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:test_app_2/settings.dart';
 import 'my_flutter_app_icons.dart';
 import 'todo_page.dart';
+import 'forest.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -15,9 +17,17 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     ItemList itemList = ItemList(context);
-    List<Widget> _appBars = [AppBar(), itemList.getAppBar(), AppBar()];
-    List<Widget> _bodies = [Container(), itemList, Container()];
-    List<Color> _colors = [Colors.white, itemList.getColor(), Colors.white];
+    List<Widget> _appBars = [
+      AppBar(),
+      itemList.getAppBar(),
+      SettingsThreePage().getAppBar()
+    ];
+    List<Widget> _bodies = [Forest().widget, itemList, SettingsThreePage()];
+    List<Color> _colors = [
+      Colors.white,
+      itemList.getColor(),
+      SettingsThreePage().getColor()
+    ];
     return Scaffold(
       backgroundColor: _colors[_currentIndex],
       appBar: _appBars[_currentIndex],
@@ -29,7 +39,7 @@ class _HomeState extends State<Home> {
             BottomNavigationBarItem(
                 icon: new Icon(MyFlutterApp.pine_tree), title: Text('Forest')),
             BottomNavigationBarItem(
-                icon: new Icon(Icons.list), title: Text('Homework')),
+                icon: new Icon(Icons.list), title: Text('Planner')),
             BottomNavigationBarItem(
                 icon: new Icon(Icons.settings), title: Text("Settings"))
           ]),
